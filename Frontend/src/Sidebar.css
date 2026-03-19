@@ -50,6 +50,9 @@ button:hover {
   font-size: 14px;
   border: solid 10px transparent;
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .history li:hover {

@@ -1,7 +1,7 @@
 import "./ChatWindow.css";
 import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { ScaleLoader } from "react-spinners";
 
 function ChatWindow() {
@@ -48,6 +48,18 @@ function ChatWindow() {
     }
   };
 
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Append new chat to prevChats when reply arrives
   useEffect(() => {
     if (currPrompt && reply) {
@@ -59,7 +71,7 @@ function ChatWindow() {
       setPrompt("");
       setLoading(false); // ✅ stop loading only after reply is set
     }
-  }, [reply]); // eslint-disable-line
+  }, [reply]);
 
   const handleProfileClick = () => setIsOpen(!isOpen);
 
@@ -69,7 +81,11 @@ function ChatWindow() {
         <span>
           ChatGPT <i className="fa-solid fa-chevron-down"></i>
         </span>
-        <div className="userIconDiv" onClick={handleProfileClick}>
+        <div
+          className="userIconDiv"
+          ref={dropdownRef}
+          onClick={handleProfileClick}
+        >
           <span className="userIcon">
             <i className="fa-solid fa-user"></i>
           </span>
@@ -79,10 +95,7 @@ function ChatWindow() {
       {isOpen && (
         <div className="dropDown">
           <div className="dropDownItem">
-            <i className="fa-solid fa-gear"></i> Settings {/* ✅ className */}
-          </div>
-          <div className="dropDownItem">
-            <i className="fa-solid fa-cloud-arrow-up"></i> Upgrade plan
+            <i className="fa-regular fa-user"></i> Login/Signup
           </div>
           <div className="dropDownItem">
             <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out

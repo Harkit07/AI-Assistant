@@ -85,7 +85,7 @@ function Sidebar() {
     <section className="sidebar">
       <button onClick={createNewChat}>
         <img
-          src="src/assets/blacklogo.png"
+          src="/blacklogo.png"
           alt="gpt logo"
           className="logo"
         ></img>
@@ -114,7 +114,7 @@ function Sidebar() {
       </ul>
 
       <div className="sign">
-        <p>By ApnaCollege &hearts;</p>
+        <p>By Harkit Singh &hearts;</p>
       </div>
     </section>
   );
