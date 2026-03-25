@@ -4,6 +4,7 @@ import { MyContext } from "./MyContext";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import Login from "./login";
 
 function Chat() {
   const { newChat, prevChats, reply } = useContext(MyContext);
@@ -11,18 +12,15 @@ function Chat() {
 
   useEffect(() => {
     if (reply === null) {
-      setLatestReply(null); //prevchat load
+      setLatestReply(null);
       return;
     }
 
     if (!prevChats?.length) return;
 
-    // const content = reply.split(" "); //individual words
-
     let idx = 0;
     const interval = setInterval(() => {
       setLatestReply(reply.slice(0, idx + 1));
-
       idx++;
       if (idx >= reply.length) clearInterval(interval);
     }, 10);
@@ -32,15 +30,22 @@ function Chat() {
 
   return (
     <>
-      {newChat && <h1>Start a New Chat!</h1>}
-      <div className="chats">
+      {newChat && <h1 className="text-5xl">Start a New Chat!</h1>}
+      <Login />
+      <div className="max-w-180 overflow-y-auto pl-5 pr-25 py-8">
         {prevChats?.slice(0, -1).map((chat, idx) => (
           <div
-            className={chat.role === "user" ? "userDiv" : "gptDiv"}
+            className={
+              chat.role === "user"
+                ? "flex justify-end text-sm"
+                : "text-left text-sm"
+            }
             key={idx}
           >
             {chat.role === "user" ? (
-              <p className="userMessage">{chat.content}</p>
+              <p className="bg-[#323232] mb-10 px-5 py-2.5 rounded-2xl ml-60 max-w-125 w-fit">
+                {chat.content}
+              </p>
             ) : (
               <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                 {chat.content}
@@ -52,13 +57,13 @@ function Chat() {
         {prevChats.length > 0 && (
           <>
             {latestReply === null ? (
-              <div className="gptDiv" key={"non-typing"}>
+              <div className="text-left text-sm" key="non-typing">
                 <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                   {prevChats[prevChats.length - 1].content}
                 </ReactMarkdown>
               </div>
             ) : (
-              <div className="gptDiv" key={"typing"}>
+              <div className="text-left text-sm" key="typing">
                 <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                   {latestReply}
                 </ReactMarkdown>

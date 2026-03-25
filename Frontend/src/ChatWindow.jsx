@@ -16,14 +16,14 @@ function ChatWindow() {
   } = useContext(MyContext);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [currPrompt, setCurrPrompt] = useState(""); // ✅ snapshot prompt before it clears
+  const [currPrompt, setCurrPrompt] = useState("");
 
   const getReply = async () => {
-    if (loading || !prompt.trim()) return; // ✅ prevent spam & empty sends
+    if (loading || !prompt.trim()) return;
 
     setLoading(true);
     setNewChat(false);
-    setCurrPrompt(prompt); // ✅ save prompt before it gets cleared
+    setCurrPrompt(prompt);
 
     const options = {
       method: "POST",
@@ -44,7 +44,7 @@ function ChatWindow() {
       }
     } catch (err) {
       console.log(err);
-      setLoading(false); // ✅ stop loading on error
+      setLoading(false);
     }
   };
 
@@ -60,69 +60,76 @@ function ChatWindow() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Append new chat to prevChats when reply arrives
   useEffect(() => {
     if (currPrompt && reply) {
       setPrevChats((prevChats) => [
         ...prevChats,
-        { role: "user", content: currPrompt }, // ✅ use snapshot, not prompt (which is cleared)
+        { role: "user", content: currPrompt },
         { role: "assistant", content: reply },
       ]);
       setPrompt("");
-      setLoading(false); // ✅ stop loading only after reply is set
+      setLoading(false);
     }
   }, [reply]);
 
   const handleProfileClick = () => setIsOpen(!isOpen);
 
   return (
-    <div className="chatWindow">
-      <div className="navbar">
-        <span>
+    <div className="bg-[#212121] h-screen w-full flex flex-col justify-between items-center text-center overflow-hidden">
+      {/* Navbar */}
+      <div className="w-full flex justify-between items-center">
+        <span className="m-4 mx-8">
           ChatGPT <i className="fa-solid fa-chevron-down"></i>
         </span>
         <div
-          className="userIconDiv"
+          className="m-4 mx-8"
           ref={dropdownRef}
           onClick={handleProfileClick}
         >
-          <span className="userIcon">
+          <span className="bg-[#339cff] h-6.25 w-6.25 rounded-full flex items-center justify-center cursor-pointer">
             <i className="fa-solid fa-user"></i>
           </span>
         </div>
       </div>
 
+      {/* Dropdown */}
       {isOpen && (
-        <div className="dropDown">
-          <div className="dropDownItem">
+        <div className="absolute top-16 right-16 w-37.5 bg-[#323232] px-2 py-1.5 rounded-md text-left z-1000 shadow-[0px_2px_8px_rgba(0,0,0,0.1)]">
+          <div className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer">
             <i className="fa-regular fa-user"></i> Login/Signup
           </div>
-          <div className="dropDownItem">
+          <div className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer">
             <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
           </div>
         </div>
       )}
 
-      <Chat></Chat>
+      <Chat />
 
-      <ScaleLoader color="#fff" loading={loading}></ScaleLoader>
+      <ScaleLoader color="#fff" loading={loading} />
 
-      <div className="chatInput">
-        <div className="inputBox">
+      {/* Chat Input */}
+      <div className="w-full flex flex-col justify-center items-center">
+        <div className="w-full relative max-w-175 flex justify-between items-center">
           <input
             placeholder="Ask anything"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) =>
               e.key === "Enter" && !loading ? getReply() : null
-            } // ✅ block Enter when loading
-            disabled={loading} // ✅ disable input while loading
+            }
+            disabled={loading}
+            className="w-full"
           />
-          <div id="submit" onClick={getReply}>
+          <div
+            id="submit"
+            onClick={getReply}
+            className="cursor-pointer h-8.75 w-8.75 text-xl absolute right-3.75 flex items-center justify-center"
+          >
             <i className="fa-solid fa-paper-plane"></i>
           </div>
         </div>
-        <p className="info">
+        <p className="text-xs py-2 px-2 text-[#b4b4b4]">
           ChatGPT can make mistakes. Check important info. See Cookie
           Preferences.
         </p>
