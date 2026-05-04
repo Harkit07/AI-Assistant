@@ -4,9 +4,9 @@ import { MyContext } from "./MyContext";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
-import Login from "./login";
+// import Login from "./login";
 
-function Chat() {
+function Chat({ showLogin, setShowLogin }) {
   const { newChat, prevChats, reply } = useContext(MyContext);
   const [latestReply, setLatestReply] = useState(null);
 
@@ -31,7 +31,7 @@ function Chat() {
   return (
     <>
       {newChat && <h1 className="text-5xl">Start a New Chat!</h1>}
-      <Login />
+
       <div className="max-w-180 overflow-y-auto pl-5 pr-25 py-8">
         {prevChats?.slice(0, -1).map((chat, idx) => (
           <div
