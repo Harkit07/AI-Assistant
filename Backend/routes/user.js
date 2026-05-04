@@ -100,6 +100,24 @@ router.post(
   },
 );
 
+router.get("/profile", authUser, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    res.status(200).json({
+      message: "User profile fetched successfully",
+      user: user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Unable to fetch user" });
+  }
+});
+
 router.get("/logout", authUser, async (req, res) => {
   try {
     // Get token from cookie or authorization header

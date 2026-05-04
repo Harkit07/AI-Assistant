@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { MyContext } from "./MyContext";
 
 const CloseIcon = () => (
   <svg
@@ -106,6 +109,7 @@ function InputField({
 }
 
 export default function Login({ onClose, visible, setVisible }) {
+  const { user, setUser } = useContext(MyContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -119,14 +123,54 @@ export default function Login({ onClose, visible, setVisible }) {
     setTimeout(() => onClose?.(), 250);
   };
 
+  const handleLogin = async (values) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/user/login`,
+        { email, password },
+      );
+      if (response.status === 200) {
+        handleClose();
+        toast.success("Login successful!");
+        setUser(response.data.user);
+        localStorage.setItem("token", response.data.token);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error(error.response?.data?.message || "Login failed");
+      }
+      console.error(error.response?.data || error.message);
+    }
+  };
+
+  const handleSignup = async (values) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/user/signup`,
+        { name, email, password },
+      );
+      if (response.status === 200) {
+        handleClose();
+        toast.success("Signup successful!");
+        setUser(response.data.user);
+        localStorage.setItem("token", response.data.token);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error(error.response?.data?.message || "Signup failed");
+      }
+      console.error(error.response?.data || error.message);
+    }
+  };
+
   const handleSubmit = () => {
     if (isSignup) {
       if (email.trim() && password.trim() && name.trim()) {
-        alert(`Signing up as: ${email}`);
+        handleSignup();
       }
     } else {
       if (email.trim() && password.trim()) {
-        alert(`Logging in as: ${email}`);
+        handleLogin();
       }
     }
   };

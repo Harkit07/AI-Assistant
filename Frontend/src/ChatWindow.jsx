@@ -4,6 +4,8 @@ import { MyContext } from "./MyContext.jsx";
 import { useContext, useState, useEffect, useRef } from "react";
 import { ScaleLoader } from "react-spinners";
 import Login from "./login.jsx";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function ChatWindow() {
   const {
@@ -19,6 +21,8 @@ function ChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
   const [currPrompt, setCurrPrompt] = useState("");
   const [showLogin, setShowLogin] = useState(false);
+
+  const token = localStorage.getItem("token");
 
   const getReply = async () => {
     if (loading || !prompt.trim()) return;
@@ -70,6 +74,24 @@ function ChatWindow() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isOpen]);
 
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/user/logout`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (response.status === 200) {
+        localStorage.removeItem("token");
+        toast.success("Logout successful!");
+      }
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+    }
+  };
+
   const handleVisible = () => setShowLogin(true);
 
   const handleProfileClick = () => setIsOpen(!isOpen);
@@ -98,19 +120,25 @@ function ChatWindow() {
       {/* Dropdown */}
       {isOpen && (
         <div className="absolute top-16 right-16 w-37.5 bg-[#323232] px-2 py-1.5 rounded-md text-left z-1000 shadow-[0px_2px_8px_rgba(0,0,0,0.1)]">
-          <div
-            className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleVisible();
-              setIsOpen(false);
-            }}
-          >
-            <i className="fa-regular fa-user"></i> Login/Signup
-          </div>
-          <div className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer">
-            <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
-          </div>
+          {!token ? (
+            <div
+              className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleVisible();
+                setIsOpen(false);
+              }}
+            >
+              <i className="fa-regular fa-user"></i> Login/Signup
+            </div>
+          ) : (
+            <div
+              className="dropDownItem text-sm my-1.5 py-2 px-0.5 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
+            </div>
+          )}
         </div>
       )}
 
