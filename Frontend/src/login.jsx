@@ -109,7 +109,7 @@ function InputField({
 }
 
 export default function Login({ onClose, visible, setVisible }) {
-  const { user, setUser } = useContext(MyContext);
+  const { user, setUser, token, setToken } = useContext(MyContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -134,6 +134,7 @@ export default function Login({ onClose, visible, setVisible }) {
         toast.success("Login successful!");
         setUser(response.data.user);
         localStorage.setItem("token", response.data.token);
+        setToken(response.data.token);
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -154,6 +155,7 @@ export default function Login({ onClose, visible, setVisible }) {
         toast.success("Signup successful!");
         setUser(response.data.user);
         localStorage.setItem("token", response.data.token);
+        setToken(response.data.token);
       }
     } catch (error) {
       if (error.response?.status === 401) {

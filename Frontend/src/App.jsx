@@ -7,8 +7,8 @@ import { ToastContainer } from "react-toastify";
 import axios from "axios";
 
 function App() {
-  const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   const [user, setUser] = useState(null);
   const [prompt, setPrompt] = useState("");
@@ -48,6 +48,8 @@ function App() {
   }, [token]);
 
   const providerValues = {
+    token,
+    setToken,
     user,
     setUser,
     loading,

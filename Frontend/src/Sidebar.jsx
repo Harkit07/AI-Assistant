@@ -2,9 +2,12 @@ import "./Sidebar.css";
 import { useContext, useEffect } from "react";
 import { MyContext } from "./MyContext.jsx";
 import { v1 as uuidv1 } from "uuid";
+import axios from "axios";
 
 function Sidebar() {
   const {
+    token,
+    setToken,
     allThreads,
     setAllThreads,
     currThreadId,
@@ -16,22 +19,38 @@ function Sidebar() {
   } = useContext(MyContext);
 
   const getAllThreads = async () => {
+    // If the user is not logged in, clear the threads and don't make the request
+    if (!token) {
+      setAllThreads([]);
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:8080/api/thread");
-      const res = await response.json();
-      const filteredData = res.map((thread) => ({
-        threadId: thread.threadId,
-        title: thread.title,
-      }));
-      setAllThreads(filteredData);
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/thread`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token to backend
+          },
+        },
+      );
+
+      if (response.status == 200) {
+        const filteredData = response.data.map((thread) => ({
+          threadId: thread.threadId,
+          title: thread.title,
+        }));
+
+        setAllThreads(filteredData);
+      }
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch threads:", err);
     }
   };
 
   useEffect(() => {
     getAllThreads();
-  }, [currThreadId]);
+  }, [currThreadId, token]);
 
   const createNewChat = () => {
     setNewChat(true);
@@ -43,34 +62,51 @@ function Sidebar() {
 
   const changeThread = async (newThreadId) => {
     setCurrThreadId(newThreadId);
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/thread/${newThreadId}`,
+      // FIXED: Added Axios and Authorization header
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/thread/${newThreadId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
-      const res = await response.json();
-      setPrevChats(res);
+
+      setPrevChats(response.data);
       setNewChat(false);
       setReply(null);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to change thread:", err);
     }
   };
 
   const deleteThread = async (threadId) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/thread/${threadId}`,
+      // FIXED: Added Axios and Authorization header
+      await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/api/thread/${threadId}`,
         {
-          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
-      const res = await response.json();
+
       setAllThreads((prev) =>
         prev.filter((thread) => thread.threadId !== threadId),
       );
       if (threadId === currThreadId) createNewChat();
     } catch (err) {
-      console.log(err);
+      console.error("Failed to delete thread:", err);
     }
   };
 

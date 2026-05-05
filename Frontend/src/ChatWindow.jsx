@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 
 function ChatWindow() {
   const {
+    token,
+    setToken,
     prompt,
     setPrompt,
     reply,
@@ -22,34 +24,74 @@ function ChatWindow() {
   const [currPrompt, setCurrPrompt] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    const fetchThreadHistory = async () => {
+      if (!currThreadId || !token) return;
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/thread/${currThreadId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (response.status == 200) {
+          setPrevChats(response.data);
+          setNewChat(false);
+        }
+      } catch (err) {
+        // If 404/403, it means the thread is new or unauthorized
+        if (err.response?.status === 404) {
+          setPrevChats([]);
+          setNewChat(true);
+        }
+      }
+    };
+
+    fetchThreadHistory();
+  }, [currThreadId, token, setPrevChats, setNewChat]);
 
   const getReply = async () => {
+    const currentToken = localStorage.getItem("token");
+
+    // FLOW: Block chat and force login if no token
+    if (!currentToken) {
+      toast.info("Please login to start chatting!");
+      setShowLogin(true);
+      return;
+    }
+
     if (loading || !prompt.trim()) return;
 
     setLoading(true);
     setNewChat(false);
     setCurrPrompt(prompt);
 
-    const options = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: prompt, threadId: currThreadId }),
-    };
-
     try {
-      const response = await fetch("http://localhost:8080/api/chat", options);
-      const res = await response.json();
-      console.log(res);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/chat`,
+        {
+          message: prompt,
+          threadId: currThreadId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
+        },
+      );
 
-      if (res.reply) {
-        setReply(res.reply);
+      if (response.data && response.data.reply) {
+        setReply(response.data.reply);
       } else {
-        console.error("No reply in response:", res);
+        toast.error("Failed to get reply");
         setLoading(false);
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      const errorMessage =
+        err.response?.data?.error || "Network error. Please try again.";
+      toast.error(errorMessage);
       setLoading(false);
     }
   };
@@ -85,7 +127,10 @@ function ChatWindow() {
 
       if (response.status === 200) {
         localStorage.removeItem("token");
+        setToken(null);
         toast.success("Logout successful!");
+        setPrevChats([]);
+        setNewChat(true);
       }
     } catch (error) {
       console.error(error.response?.data || error.message);
