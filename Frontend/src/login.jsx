@@ -85,19 +85,20 @@ function InputField({
         onFocus={() => setFocusedField(focusKey)}
         onBlur={() => setFocusedField(null)}
         placeholder={placeholder}
-        className="w-full rounded-xl px-4 py-3 text-sm font-light text-white outline-none transition-all duration-200"
-        style={{
-          background: isFocused
-            ? "rgba(255,255,255,0.07)"
-            : "rgba(255,255,255,0.04)",
-          border: isFocused
-            ? "1px solid rgba(255,255,255,0.25)"
-            : "1px solid rgba(255,255,255,0.09)",
-          boxShadow: isFocused ? "0 0 0 3px rgba(255,255,255,0.04)" : "none",
-          color: "#fff",
-          caretColor: "#fff",
-          paddingRight: children ? "2.75rem" : undefined,
-        }}
+        className={`
+          w-full rounded-xl px-4 text-sm font-light text-white outline-none
+          transition-all duration-200
+          /* mobile: taller tap target */
+          py-3.5 md:py-3
+          /* right padding when eye icon present */
+          ${children ? "pr-11" : ""}
+          ${
+            isFocused
+              ? "bg-white/[0.07] border border-white/25 shadow-[0_0_0_3px_rgba(255,255,255,0.04)]"
+              : "bg-white/4 border border-white/9"
+          }
+        `}
+        style={{ color: "#fff", caretColor: "#fff" }}
       />
       {children && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -109,7 +110,7 @@ function InputField({
 }
 
 export default function Login({ onClose, visible, setVisible }) {
-  const { user, setUser, token, setToken } = useContext(MyContext);
+  const { setUser, setToken } = useContext(MyContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -123,7 +124,7 @@ export default function Login({ onClose, visible, setVisible }) {
     setTimeout(() => onClose?.(), 250);
   };
 
-  const handleLogin = async (values) => {
+  const handleLogin = async () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/user/login`,
@@ -137,14 +138,13 @@ export default function Login({ onClose, visible, setVisible }) {
         setToken(response.data.token);
       }
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401)
         toast.error(error.response?.data?.message || "Login failed");
-      }
       console.error(error.response?.data || error.message);
     }
   };
 
-  const handleSignup = async (values) => {
+  const handleSignup = async () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/user/signup`,
@@ -158,22 +158,17 @@ export default function Login({ onClose, visible, setVisible }) {
         setToken(response.data.token);
       }
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401)
         toast.error(error.response?.data?.message || "Signup failed");
-      }
       console.error(error.response?.data || error.message);
     }
   };
 
   const handleSubmit = () => {
     if (isSignup) {
-      if (email.trim() && password.trim() && name.trim()) {
-        handleSignup();
-      }
+      if (email.trim() && password.trim() && name.trim()) handleSignup();
     } else {
-      if (email.trim() && password.trim()) {
-        handleLogin();
-      }
+      if (email.trim() && password.trim()) handleLogin();
     }
   };
 
@@ -189,33 +184,23 @@ export default function Login({ onClose, visible, setVisible }) {
 
   return (
     <>
+      {/* Keyframe animations & grain — cannot be done in Tailwind */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
-
         .login-root * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
         .login-title  { font-family: 'Instrument Serif', serif; }
 
-        @keyframes overlayIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes modalIn {
-          from { opacity: 0; transform: translateY(18px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalIn   { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .overlay-anim { animation: overlayIn 0.3s ease forwards; }
         .modal-anim   { animation: modalIn 0.38s cubic-bezier(0.16,1,0.3,1) forwards; }
 
         .close-spin { transition: transform 0.25s ease, background 0.2s ease; }
         .close-spin:hover { transform: rotate(90deg); background: rgba(255,255,255,0.1) !important; }
-
-        .login-btn { transition: all 0.2s ease; }
         .login-btn:hover  { background: #e4e4e4 !important; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,0.13); }
         .login-btn:active { transform: translateY(0); box-shadow: none; }
-
-        .eye-btn { transition: color 0.15s ease; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; display: flex; align-items: center; }
+        .eye-btn { color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; display: flex; align-items: center; transition: color 0.15s ease; }
         .eye-btn:hover { color: rgba(255,255,255,0.6); }
-
         .link-hover { transition: color 0.15s ease; }
         .link-hover:hover { color: rgba(255,255,255,0.65) !important; }
 
@@ -228,10 +213,8 @@ export default function Login({ onClose, visible, setVisible }) {
           position: absolute; inset: -1px; border-radius: 1rem; pointer-events: none;
           background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(255,255,255,0.03) 100%);
         }
-
         input::placeholder { color: rgba(255,255,255,0.25); }
-        input:-webkit-autofill,
-        input:-webkit-autofill:focus {
+        input:-webkit-autofill, input:-webkit-autofill:focus {
           -webkit-box-shadow: 0 0 0 1000px #141415 inset !important;
           -webkit-text-fill-color: #fff !important;
         }
@@ -247,8 +230,19 @@ export default function Login({ onClose, visible, setVisible }) {
         }}
         onClick={(e) => e.target === e.currentTarget && handleClose()}
       >
+        {/*
+          Modal sizing:
+            mobile  (default)  : w-[calc(100vw-2rem)]  p-6
+            tablet  md (768px) : max-w-[22rem]         p-7
+            desktop lg (1024px): max-w-[352px]         p-8
+        */}
         <div
-          className="modal-anim relative w-full max-w-88 rounded-2xl p-8 overflow-hidden"
+          className="
+            modal-anim relative w-[calc(100vw-2rem)] rounded-2xl overflow-hidden
+            p-6
+            md:w-full md:max-w-88 md:p-7
+            lg:max-w-88 lg:p-8
+          "
           style={{
             background: "linear-gradient(160deg, #141415 0%, #0f0f10 100%)",
             border: "1px solid rgba(255,255,255,0.07)",
@@ -260,6 +254,7 @@ export default function Login({ onClose, visible, setVisible }) {
           <div className="glow-ring" />
 
           <div className="relative z-10">
+            {/* Close button */}
             <button
               onClick={handleClose}
               className="close-spin absolute -top-1 -right-1 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70"
@@ -268,8 +263,15 @@ export default function Login({ onClose, visible, setVisible }) {
               <CloseIcon />
             </button>
 
+            {/* Header */}
             <div className="text-center mb-7">
-              <h2 className="login-title text-white text-[1.75rem] leading-tight mb-2.5">
+              {/*
+                Title font size:
+                  mobile  : text-2xl  (1.5rem)
+                  tablet  : text-[1.6rem]
+                  desktop : text-[1.75rem]
+              */}
+              <h2 className="login-title text-white text-2xl md:text-[1.6rem] lg:text-[1.75rem] leading-tight mb-2.5">
                 {isSignup ? "Create an account" : "Log in or sign up"}
               </h2>
               <p className="text-white/35 text-[0.8rem] leading-relaxed font-light">
@@ -279,6 +281,7 @@ export default function Login({ onClose, visible, setVisible }) {
               </p>
             </div>
 
+            {/* Fields */}
             <div className="flex flex-col gap-2.5 mb-3">
               {isSignup && (
                 <InputField
@@ -291,7 +294,6 @@ export default function Login({ onClose, visible, setVisible }) {
                   setFocusedField={setFocusedField}
                 />
               )}
-
               <InputField
                 type="email"
                 value={email}
@@ -301,7 +303,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 focusedField={focusedField}
                 setFocusedField={setFocusedField}
               />
-
               <InputField
                 type={showPass ? "text" : "password"}
                 value={password}
@@ -322,6 +323,7 @@ export default function Login({ onClose, visible, setVisible }) {
               </InputField>
             </div>
 
+            {/* Forgot password */}
             {!isSignup && (
               <div className="flex justify-end mb-5">
                 <a
@@ -334,10 +336,11 @@ export default function Login({ onClose, visible, setVisible }) {
               </div>
             )}
 
+            {/* Submit button — taller on mobile for easy tap */}
             <div className={isSignup ? "mt-5" : ""}>
               <button
                 onClick={handleSubmit}
-                className="login-btn w-full rounded-xl px-4 py-3 text-sm font-semibold text-[#0f0f10] tracking-tight"
+                className="login-btn w-full rounded-xl px-4 font-semibold text-[#0f0f10] tracking-tight transition-all duration-200 py-3.5 md:py-3 text-sm"
                 style={{ background: "#ffffff" }}
               >
                 {isSignup ? "Sign up" : "Continue"}
@@ -359,6 +362,7 @@ export default function Login({ onClose, visible, setVisible }) {
               </button>
             </p>
 
+            {/* Legal */}
             <p
               className="text-center mt-4 text-[0.7rem] font-light leading-relaxed"
               style={{ color: "rgba(255,255,255,0.2)" }}

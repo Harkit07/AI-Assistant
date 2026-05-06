@@ -4,7 +4,6 @@ import { MyContext } from "./MyContext";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
-// import Login from "./login";
 
 function Chat({ showLogin, setShowLogin }) {
   const { newChat, prevChats, reply } = useContext(MyContext);
@@ -15,7 +14,6 @@ function Chat({ showLogin, setShowLogin }) {
       setLatestReply(null);
       return;
     }
-
     if (!prevChats?.length) return;
 
     let idx = 0;
@@ -30,40 +28,55 @@ function Chat({ showLogin, setShowLogin }) {
 
   return (
     <>
-      {newChat && <h1 className="text-5xl">Start a New Chat!</h1>}
+      {newChat && (
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold">
+          Start a New Chat!
+        </h1>
+      )}
 
-      <div className="max-w-180 overflow-y-auto pl-5 pr-25 py-8">
+      {/* Scrollable message area */}
+      <div className="w-full max-w-[95%] md:max-w-2xl lg:max-w-180 overflow-y-auto px-3 md:px-5 lg:pl-5 lg:pr-24 py-6 md:py-8">
+        {/* All messages except the last */}
         {prevChats?.slice(0, -1).map((chat, idx) => (
           <div
+            key={idx}
             className={
               chat.role === "user"
                 ? "flex justify-end text-sm"
                 : "text-left text-sm"
             }
-            key={idx}
           >
             {chat.role === "user" ? (
-              <p className="bg-[#323232] mb-10 px-5 py-2.5 rounded-2xl ml-60 max-w-125 w-fit">
+              <p className="bg-[#323232] mb-6 md:mb-10 px-4 md:px-5 py-2.5 rounded-2xl ml-10 sm:ml-24 md:ml-40 lg:ml-60 max-w-[80vw] md:max-w-125 w-fit text-xs md:text-sm">
                 {chat.content}
               </p>
             ) : (
-              <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                {chat.content}
-              </ReactMarkdown>
+              <div className="text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm">
+                <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                  {chat.content}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
         ))}
 
+        {/* Last message — typing or static */}
         {prevChats.length > 0 && (
           <>
             {latestReply === null ? (
-              <div className="text-left text-sm" key="non-typing">
+              <div
+                key="non-typing"
+                className="text-left text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm"
+              >
                 <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                   {prevChats[prevChats.length - 1].content}
                 </ReactMarkdown>
               </div>
             ) : (
-              <div className="text-left text-sm" key="typing">
+              <div
+                key="typing"
+                className="text-left text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm"
+              >
                 <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                   {latestReply}
                 </ReactMarkdown>
