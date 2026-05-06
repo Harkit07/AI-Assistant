@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import https from "https";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import chatRoutes from "./routes/chat.js";
@@ -28,7 +29,7 @@ app.use("/user", userRoutes);
 
 // ✅ Keep-alive self-ping function (prevents Render sleep)
 const keepAlive = () => {
-  const url = process.env.RENDER_URL || `http://localhost:${port}/health`;
+  const url = process.env.RENDER_URL || `http://localhost:${PORT}/health`;
 
   // Only ping in production to Alive
   if (process.env.NODE_ENV === "production") {
