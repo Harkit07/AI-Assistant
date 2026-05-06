@@ -17,11 +17,17 @@ function App() {
   const [prevChats, setPrevChats] = useState([]);
   const [newChat, setNewChat] = useState(true);
   const [allThreads, setAllThreads] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 2️⃣ Fetch user ONLY if token exists
         if (token) {
           const userRes = await axios.get(
             `${import.meta.env.VITE_BASE_URL}/user/profile`,
@@ -34,7 +40,7 @@ function App() {
             setUser(userRes.data.user);
           }
         } else {
-          setUser(null); // logged out user
+          setUser(null);
         }
       } catch (err) {
         console.log(err);
@@ -68,8 +74,36 @@ function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#212121] text-[#ececec] font-sans">
-      <ToastContainer position="top-center" autoClose={2000} />
+    // min-h-dvh: uses dynamic viewport height on mobile (excludes browser chrome like address bar)
+    // min-h-screen: fallback for browsers that don't support dvh
+    <div className="flex min-h-dvh bg-[#212121] text-[#ececec] font-sans overflow-hidden">
+      <ToastContainer
+        position={isMobile ? "bottom-center" : "top-center"}
+        autoClose={2000}
+        // Responsive styles via toastClassName / bodyClassName
+        toastClassName={() =>
+          [
+            "relative flex items-center justify-between",
+            "rounded-lg shadow-lg overflow-hidden cursor-pointer",
+            "bg-[#2e2e2e] text-[#ececec]",
+            // Smaller padding and font on mobile
+            "px-3 py-2 sm:px-4 sm:py-3",
+            "text-xs sm:text-sm",
+            "min-h-[44px] sm:min-h-[56px]",
+            "mb-2 sm:mb-3",
+          ].join(" ")
+        }
+        bodyClassName={() => "flex items-center gap-2 p-0 m-0 w-full"}
+        style={{
+          // Keep toasts away from edges on mobile
+          bottom: isMobile ? "1rem" : undefined,
+          top: !isMobile ? "1rem" : undefined,
+          left: isMobile ? "50%" : undefined,
+          transform: isMobile ? "translateX(-50%)" : undefined,
+          width: isMobile ? "calc(100% - 2rem)" : "320px",
+          maxWidth: "100%",
+        }}
+      />
       <MyContext.Provider value={providerValues}>
         <Sidebar />
         <ChatWindow />
