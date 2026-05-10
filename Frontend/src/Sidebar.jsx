@@ -215,7 +215,7 @@ function Sidebar() {
           className="flex justify-between items-center m-2.5 p-2.5 rounded-md bg-transparent border border-white/50 cursor-pointer"
         >
           <img
-            src="/blacklogo.png"
+            src="/Img.png"
             alt="gpt logo"
             className="h-6.25 w-6.25 bg-white rounded-full object-cover"
           />
