@@ -1,156 +1,248 @@
-# ChatGPT Clone
+# 🤖 AI Assistant — Full Stack ChatGPT Clone
 
-A full-stack ChatGPT clone built with React and Node.js, featuring real-time AI responses, user authentication, and persistent chat history.
+A production-ready full-stack AI chat application built with the MERN stack and OpenAI API. Supports multi-turn conversations, persistent chat history, per-user thread management, and a responsive UI with Markdown rendering — deployed independently on Render.
 
----
-
-## Features
-
-- **AI Chat** — Powered by a backend LLM integration with real-time typing animation
-- **Authentication** — Login and signup with JWT-based auth stored in localStorage
-- **Persistent Threads** — Chat history saved per user, organized by threads in the sidebar
-- **Thread Management** — Create new chats, switch between threads, and delete old ones
-- **Markdown Rendering** — AI responses rendered with syntax-highlighted code blocks
-- **Protected Routes** — Unauthenticated users are prompted to log in before chatting
-- **Toast Notifications** — User feedback for login, logout, errors, and more
+🔗 **Live Demo:** [ai-assistant-nsg8.onrender.com](https://ai-assistant-nsg8.onrender.com/) · **GitHub:** [github.com/Harkit07/AI-Assistant](https://github.com/Harkit07/AI-Assistant.git)
 
 ---
 
-## Tech Stack
+## 📋 Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [Environment Variables](#environment-variables)
+- [API Routes](#api-routes)
+- [Deployment](#deployment)
+
+---
+
+## ✨ Features
+
+- 🧠 **Multi-Turn Conversations** — Full conversation context sent with every request for coherent AI responses
+- 💾 **Persistent Chat History** — All chats stored in MongoDB and restored on login across sessions
+- 🗂️ **Thread Management** — Users can create, switch between, and delete individual chat threads
+- 🔐 **JWT Authentication** — Secure signup, login, and session handling with JSON Web Tokens
+- 🛡️ **Protected API Routes** — All chat and user endpoints secured with JWT middleware
+- 📝 **Markdown Rendering** — AI responses rendered with full Markdown support including syntax-highlighted code blocks
+- ⚡ **Global State with Context API** — Chat, sidebar, and auth state managed via React Context — no prop drilling
+- 📱 **Fully Responsive UI** — Sidebar + chat layout optimized for mobile, tablet, and desktop
+- 🚀 **Independent Deployment** — Frontend and backend deployed separately on Render
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- React (Vite)
-- Tailwind CSS
-- Axios
-- React Markdown + rehype-highlight
-- React Toastify
-- UUID
+
+| Technology | Purpose |
+|---|---|
+| React.js | UI framework |
+| Tailwind CSS | Utility-first styling |
+| React Context API | Global state (auth, chats, sidebar) |
+| React Markdown | Rendering AI responses with Markdown |
+| Axios | HTTP client for API requests |
 
 ### Backend
-- Node.js + Express
-- MongoDB + Mongoose
-- JWT (jsonwebtoken)
-- bcrypt
-- express-validator
+
+| Technology | Purpose |
+|---|---|
+| Node.js + Express.js | Web server & REST API |
+| MongoDB + Mongoose ODM | Database & schema modeling |
+| JWT (jsonwebtoken) | Authentication & route protection |
+| Bcrypt | Password hashing |
+| OpenAI API | AI chat completions |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-ChatGPT/
-├── Frontend/
-│   └── src/
-│       ├── App.jsx           # Root component, context provider
-│       ├── MyContext.jsx     # Global state context
-│       ├── Sidebar.jsx       # Thread list, create/delete chats
-│       ├── ChatWindow.jsx    # Main chat UI, input, navbar
-│       ├── Chat.jsx          # Message rendering with typing effect
-│       └── Login.jsx         # Login/Signup modal
+AI-Assistant/
+├── Backend/
+│   ├── controllers/
+│   │   ├── auth.js          # Signup & login logic
+│   │   ├── chat.js          # Send message, get AI response
+│   │   └── thread.js        # Create, fetch, delete threads
+│   │
+│   ├── models/
+│   │   ├── user.js          # User schema (name, email, hashed password)
+│   │   ├── thread.js        # Thread schema (title, owner, timestamps)
+│   │   └── message.js       # Message schema (role, content, threadId)
+│   │
+│   ├── routes/
+│   │   ├── auth.js          # /api/auth routes
+│   │   ├── chat.js          # /api/chat routes
+│   │   └── thread.js        # /api/threads routes
+│   │
+│   ├── middleware/
+│   │   └── auth.js          # JWT verification middleware
+│   │
+│   └── app.js               # Express app entry point
 │
-└── Backend/
-    ├── index.js              # Entry point
-    ├── middleware.js          # JWT auth middleware
-    ├── models/
-    │   ├── user.js           # User schema
-    │   └── blacklistToken.js # Token blacklist schema
-    ├── routes/
-    │   └── user.js           # Auth routes
-    ├── controllers/
-    │   └── user.js           # Auth logic
-    └── services/
-        ├── wrapAsync.js
-        └── validationResult.js
+└── Frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── Sidebar.jsx       # Thread list, new chat button
+    │   │   ├── ChatWindow.jsx    # Message display area
+    │   │   ├── MessageInput.jsx  # User input & send button
+    │   │   └── MessageBubble.jsx # Individual message with Markdown
+    │   │
+    │   ├── pages/
+    │   │   ├── Login.jsx         # Login page
+    │   │   ├── Signup.jsx        # Signup page
+    │   │   └── Chat.jsx          # Main chat layout
+    │   │
+    │   ├── context/
+    │   │   ├── AuthContext.jsx   # Auth state & token management
+    │   │   └── ChatContext.jsx   # Threads & messages state
+    │   │
+    │   ├── api/
+    │   │   └── axios.js          # Axios instance with base URL & auth headers
+    │   │
+    │   └── main.jsx              # React DOM entry point
+    │
+    └── index.html
 ```
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js v18+
-- MongoDB
-- A `.env` file for both frontend and backend
+
+- **Node.js** v18+
+- **npm** v9+
+- A **MongoDB** database ([MongoDB Atlas](https://www.mongodb.com/atlas) recommended)
+- An **OpenAI API key** from [platform.openai.com](https://platform.openai.com)
+
+---
 
 ### Backend Setup
 
 ```bash
+# 1. Navigate to the backend directory
 cd Backend
+
+# 2. Install dependencies
 npm install
+
+# 3. Create your environment file
+touch .env
+# Fill in the required variables (see Environment Variables below)
+
+# 4. Start the backend server
+node app.js
 ```
 
-Create a `.env` file:
-```env
-PORT=8080
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-OPENAI_API_KEY=your_openai_api_key
-```
+Backend will be available at `http://localhost:5000`.
 
-Start the server:
-```bash
-npm start
-```
+---
 
 ### Frontend Setup
 
 ```bash
+# 1. Navigate to the frontend directory
 cd Frontend
+
+# 2. Install dependencies
 npm install
-```
 
-Create a `.env` file:
-```env
-VITE_BASE_URL=http://localhost:8080
-```
+# 3. Create your environment file
+touch .env
+# Set VITE_API_URL to your backend URL
 
-Start the dev server:
-```bash
+# 4. Start the development server
 npm run dev
 ```
 
----
-
-## Deployment
-
-### Frontend (Render / Vercel / Netlify)
-- **Build Command:** `npm run build`
-- **Publish Directory:** `dist`
-- Set `VITE_BASE_URL` to your deployed backend URL
-
-### Backend (Render)
-- **Start Command:** `node index.js`
-- Set all environment variables in the Render dashboard
+Frontend will be available at `http://localhost:5173`.
 
 ---
 
-## API Endpoints
+## 🔐 Environment Variables
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/user/signup` | Register a new user | No |
-| POST | `/user/login` | Login and get token | No |
-| GET | `/user/logout` | Logout and blacklist token | Yes |
-| GET | `/user/profile` | Get current user | Yes |
-| POST | `/api/chat` | Send a message and get AI reply | Yes |
-| GET | `/api/thread` | Get all threads for user | Yes |
-| GET | `/api/thread/:id` | Get messages in a thread | Yes |
-| DELETE | `/api/thread/:id` | Delete a thread | Yes |
+### Backend `.env`
+
+```env
+# MongoDB
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ai-assistant
+
+# JWT
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=7d
+
+# OpenAI
+OPENAI_API_KEY=sk-your_openai_api_key
+
+# Server
+PORT=5000
+```
+
+### Frontend `.env`
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
 ---
 
-## Screenshots
+## 📡 API Routes
 
-> Add screenshots here
+### Auth — `/api/auth`
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `POST` | `/api/auth/signup` | ❌ | Register a new user |
+| `POST` | `/api/auth/login` | ❌ | Login and receive JWT |
+
+### Threads — `/api/threads`
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `GET` | `/api/threads` | ✅ | Get all threads for current user |
+| `POST` | `/api/threads` | ✅ | Create a new chat thread |
+| `DELETE` | `/api/threads/:id` | ✅ Owner | Delete a thread and its messages |
+
+### Chat — `/api/chat`
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `GET` | `/api/chat/:threadId` | ✅ | Get all messages in a thread |
+| `POST` | `/api/chat/:threadId` | ✅ | Send a message & get AI response |
 
 ---
 
-## Author
+## 🚢 Deployment
 
-Made with ♥ by **Harkit Singh**
+Frontend and backend are deployed independently on **Render**.
+
+**Backend (Web Service)**
+- Build command: `npm install`
+- Start command: `node app.js`
+- Add all backend environment variables in the Render dashboard
+
+**Frontend (Static Site)**
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Set `VITE_API_URL` to your deployed backend URL
 
 ---
 
-## License
+## 👨‍💻 Author
 
-This project is open source and available under the [MIT License](LICENSE).
+**Harkit Singh**
+- 📧 harkitsinghsran9584@gmail.com
+- 📞 +91-8890436710
+- 🌐 [Portfolio](https://portfolio-8zov.onrender.com)
+- 🐙 [github.com/Harkit07](https://github.com/Harkit07)
+
+---
+
+## 📝 License
+
+This project is open source and free to use.
