@@ -35,3 +35,5 @@ const connectDB = async () => {
     console.log("Failed to connect with Db", err);
   }
 };
+
+export default app;
