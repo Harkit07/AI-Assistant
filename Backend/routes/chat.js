@@ -21,6 +21,16 @@ router.post("/test", async (req, res) => {
   }
 });
 
+router.get("/checkserver", async (req, res) => {
+  try {
+    const response = await Thread.find({});
+    res.send(response);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Failed to save in DB" });
+  }
+});
+
 //Get all threads
 router.get("/thread", authUser, async (req, res) => {
   try {
