@@ -29,10 +29,7 @@ app.listen(PORT, () => {
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      family: 4,
-      serverSelectionTimeoutMS: 10000,
-    });
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log("Connected with Database!");
   } catch (err) {
     console.log("Failed to connect with Db", err);
