@@ -1,6 +1,6 @@
 # 🤖 AI Assistant — Full Stack ChatGPT Clone
 
-A production-ready full-stack AI chat application built with the MERN stack and OpenAI API. Supports multi-turn conversations, persistent chat history, per-user thread management, and a responsive UI with Markdown rendering — deployed independently on Render.
+A production-ready full-stack AI chat application built with the MERN stack and OpenAI API. Supports multi-turn conversations, persistent chat history, per-user thread management, and a responsive UI with Markdown rendering — frontend deployed on Render, backend deployed on Netlify.
 
 🔗 **Live Demo:** [ai-assistant-nsg8.onrender.com](https://ai-assistant-nsg8.onrender.com/) · **GitHub:** [github.com/Harkit07/AI-Assistant](https://github.com/Harkit07/AI-Assistant.git)
 
@@ -31,7 +31,7 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 - 📝 **Markdown Rendering** — AI responses rendered with full Markdown support including syntax-highlighted code blocks
 - ⚡ **Global State with Context API** — Chat, sidebar, and auth state managed via React Context — no prop drilling
 - 📱 **Fully Responsive UI** — Sidebar + chat layout optimized for mobile, tablet, and desktop
-- 🚀 **Independent Deployment** — Frontend and backend deployed separately on Render
+- 🚀 **Independent Deployment** — Frontend deployed on Render, backend deployed on Netlify (serverless functions)
 
 ---
 
@@ -39,23 +39,23 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 
 ### Frontend
 
-| Technology | Purpose |
-|---|---|
-| React.js | UI framework |
-| Tailwind CSS | Utility-first styling |
-| React Context API | Global state (auth, chats, sidebar) |
-| React Markdown | Rendering AI responses with Markdown |
-| Axios | HTTP client for API requests |
+| Technology        | Purpose                              |
+| ----------------- | ------------------------------------ |
+| React.js          | UI framework                         |
+| Tailwind CSS      | Utility-first styling                |
+| React Context API | Global state (auth, chats, sidebar)  |
+| React Markdown    | Rendering AI responses with Markdown |
+| Axios             | HTTP client for API requests         |
 
 ### Backend
 
-| Technology | Purpose |
-|---|---|
-| Node.js + Express.js | Web server & REST API |
-| MongoDB + Mongoose ODM | Database & schema modeling |
-| JWT (jsonwebtoken) | Authentication & route protection |
-| Bcrypt | Password hashing |
-| OpenAI API | AI chat completions |
+| Technology             | Purpose                           |
+| ---------------------- | --------------------------------- |
+| Node.js + Express.js   | Web server & REST API             |
+| MongoDB + Mongoose ODM | Database & schema modeling        |
+| JWT (jsonwebtoken)     | Authentication & route protection |
+| Bcrypt                 | Password hashing                  |
+| OpenAI API             | AI chat completions               |
 
 ---
 
@@ -186,7 +186,7 @@ PORT=5000
 ### Frontend `.env`
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://your-netlify-site.netlify.app/api
 ```
 
 ---
@@ -195,47 +195,77 @@ VITE_API_URL=http://localhost:5000/api
 
 ### Auth — `/api/auth`
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| `POST` | `/api/auth/signup` | ❌ | Register a new user |
-| `POST` | `/api/auth/login` | ❌ | Login and receive JWT |
+| Method | Route              | Auth | Description           |
+| ------ | ------------------ | ---- | --------------------- |
+| `POST` | `/api/auth/signup` | ❌   | Register a new user   |
+| `POST` | `/api/auth/login`  | ❌   | Login and receive JWT |
 
 ### Threads — `/api/threads`
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| `GET` | `/api/threads` | ✅ | Get all threads for current user |
-| `POST` | `/api/threads` | ✅ | Create a new chat thread |
+| Method   | Route              | Auth     | Description                      |
+| -------- | ------------------ | -------- | -------------------------------- |
+| `GET`    | `/api/threads`     | ✅       | Get all threads for current user |
+| `POST`   | `/api/threads`     | ✅       | Create a new chat thread         |
 | `DELETE` | `/api/threads/:id` | ✅ Owner | Delete a thread and its messages |
 
 ### Chat — `/api/chat`
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| `GET` | `/api/chat/:threadId` | ✅ | Get all messages in a thread |
-| `POST` | `/api/chat/:threadId` | ✅ | Send a message & get AI response |
+| Method | Route                 | Auth | Description                      |
+| ------ | --------------------- | ---- | -------------------------------- |
+| `GET`  | `/api/chat/:threadId` | ✅   | Get all messages in a thread     |
+| `POST` | `/api/chat/:threadId` | ✅   | Send a message & get AI response |
 
 ---
 
 ## 🚢 Deployment
 
-Frontend and backend are deployed independently on **Render**.
+Frontend and backend are deployed independently — frontend on **Render**, backend on **Netlify**.
 
-**Backend (Web Service)**
+**Backend (Netlify — Serverless Functions)**
+
+- The Express app is wrapped with `serverless-http` to run as a Netlify Function
 - Build command: `npm install`
-- Start command: `node app.js`
-- Add all backend environment variables in the Render dashboard
+- Functions directory: `.` (or wherever `app.js` is exported as `handler`)
+- Add all backend environment variables in the Netlify dashboard under **Site Settings → Environment Variables**
+- API base path: `/.netlify/functions/app/api/...`
 
-**Frontend (Static Site)**
+**`netlify.toml`** (place in `Backend/` root):
+
+```toml
+[build]
+  command = "npm install"
+  functions = "."
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/app/:splat"
+  status = 200
+```
+
+**`app.js`** — export handler alongside your existing code:
+
+```js
+const serverless = require("serverless-http");
+// ... existing Express app setup ...
+module.exports.handler = serverless(app);
+```
+
+**Frontend (Render — Static Site)**
+
 - Build command: `npm run build`
 - Publish directory: `dist`
-- Set `VITE_API_URL` to your deployed backend URL
+- Set `VITE_API_URL` to your Netlify backend URL:
+
+```env
+VITE_API_URL=https://your-netlify-site.netlify.app/api
+```
 
 ---
 
 ## 👨‍💻 Author
 
 **Harkit Singh**
+
 - 📧 harkitsinghsran9584@gmail.com
 - 📞 +91-8890436710
 - 🌐 [Portfolio](https://portfolio-8zov.onrender.com)
