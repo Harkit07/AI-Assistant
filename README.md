@@ -64,47 +64,34 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 ```
 AI-Assistant/
 ├── Backend/
-│   ├── controllers/
-│   │   ├── auth.js          # Signup & login logic
-│   │   ├── chat.js          # Send message, get AI response
-│   │   └── thread.js        # Create, fetch, delete threads
-│   │
 │   ├── models/
 │   │   ├── user.js          # User schema (name, email, hashed password)
 │   │   ├── thread.js        # Thread schema (title, owner, timestamps)
-│   │   └── message.js       # Message schema (role, content, threadId)
+│   │   └── blacklistToken.js       # Blacklisted token schema
+│   │
+│   ├── netlify/
+│   │    └── functions/
+│   │        └── server.js  # Netlify Deployment file
 │   │
 │   ├── routes/
-│   │   ├── auth.js          # /api/auth routes
-│   │   ├── chat.js          # /api/chat routes
-│   │   └── thread.js        # /api/threads routes
+│   │   ├── user.js          # Signup, login, profile, logout logic & route
+│   │   └── chat.js        # Chat, Thread logic & route
 │   │
-│   ├── middleware/
-│   │   └── auth.js          # JWT verification middleware
+│   ├── services/
+│   │   ├── validationResult.js            # Validation Result
+│   │   └── user.js                   # Create User
 │   │
-│   └── app.js               # Express app entry point
+│   ├── middleware.js   # JWT verification middleware
+│   │
+│   └── server.js               # Express app entry point
 │
 └── Frontend/
     ├── src/
-    │   ├── components/
-    │   │   ├── Sidebar.jsx       # Thread list, new chat button
-    │   │   ├── ChatWindow.jsx    # Message display area
-    │   │   ├── MessageInput.jsx  # User input & send button
-    │   │   └── MessageBubble.jsx # Individual message with Markdown
-    │   │
-    │   ├── pages/
-    │   │   ├── Login.jsx         # Login page
-    │   │   ├── Signup.jsx        # Signup page
-    │   │   └── Chat.jsx          # Main chat layout
-    │   │
-    │   ├── context/
-    │   │   ├── AuthContext.jsx   # Auth state & token management
-    │   │   └── ChatContext.jsx   # Threads & messages state
-    │   │
-    │   ├── api/
-    │   │   └── axios.js          # Axios instance with base URL & auth headers
-    │   │
-    │   └── main.jsx              # React DOM entry point
+    │   ├── Sidebar.jsx       # Sidebar
+    │   ├── ChatWindow.jsx    # Main chat Window
+    │   ├── Login.jsx         # Login Page
+    │   ├── MyContext.jsx     # User Context
+    │   └── main.jsx          # React DOM entry point
     │
     └── index.html
 ```
@@ -136,10 +123,10 @@ touch .env
 # Fill in the required variables (see Environment Variables below)
 
 # 4. Start the backend server
-node app.js
+node server.js
 ```
 
-Backend will be available at `http://localhost:5000`.
+Backend will be available at `http://localhost:8080`.
 
 ---
 
@@ -180,7 +167,7 @@ JWT_EXPIRES_IN=7d
 OPENAI_API_KEY=sk-your_openai_api_key
 
 # Server
-PORT=5000
+PORT=8080
 ```
 
 ### Frontend `.env`
@@ -193,27 +180,23 @@ VITE_API_URL=https://your-netlify-site.netlify.app/api
 
 ## 📡 API Routes
 
-### Auth — `/api/auth`
+### Auth — `/user`
 
-| Method | Route              | Auth | Description           |
-| ------ | ------------------ | ---- | --------------------- |
-| `POST` | `/api/auth/signup` | ❌   | Register a new user   |
-| `POST` | `/api/auth/login`  | ❌   | Login and receive JWT |
+| Method | Route           | Auth | Description           |
+| ------ | --------------- | ---- | --------------------- |
+| `POST` | `/user/signup`  | ❌   | Register a new user   |
+| `POST` | `/user/login`   | ❌   | Login and receive JWT |
+| `GET`  | `/user/profile` | ✅   | Get user profile      |
+| `GET`  | `/user/logout`  | ✅   | Logout a user         |
 
-### Threads — `/api/threads`
+### Chat — `/api`
 
-| Method   | Route              | Auth     | Description                      |
-| -------- | ------------------ | -------- | -------------------------------- |
-| `GET`    | `/api/threads`     | ✅       | Get all threads for current user |
-| `POST`   | `/api/threads`     | ✅       | Create a new chat thread         |
-| `DELETE` | `/api/threads/:id` | ✅ Owner | Delete a thread and its messages |
-
-### Chat — `/api/chat`
-
-| Method | Route                 | Auth | Description                      |
-| ------ | --------------------- | ---- | -------------------------------- |
-| `GET`  | `/api/chat/:threadId` | ✅   | Get all messages in a thread     |
-| `POST` | `/api/chat/:threadId` | ✅   | Send a message & get AI response |
+| Method   | Route                   | Auth | Description                            |
+| -------- | ----------------------- | ---- | -------------------------------------- |
+| `GET`    | `/api/thread`           | ✅   | Get all threads                        |
+| `GET`    | `/api/thread/:threadId` | ✅   | Get a message in a thread              |
+| `DELETE` | `/api/thread/:threadId` | ✅   | Delete a thread                        |
+| `POST`   | `/api/chat`             | ✅   | Send a message and receive AI response |
 
 ---
 
@@ -225,24 +208,24 @@ Frontend and backend are deployed independently — frontend on **Render**, back
 
 - The Express app is wrapped with `serverless-http` to run as a Netlify Function
 - Build command: `npm install`
-- Functions directory: `.` (or wherever `app.js` is exported as `handler`)
+- Functions directory: `netlify/functions`
 - Add all backend environment variables in the Netlify dashboard under **Site Settings → Environment Variables**
-- API base path: `/.netlify/functions/app/api/...`
+- API base path: `/.netlify/functions/server/api/...`
 
 **`netlify.toml`** (place in `Backend/` root):
 
 ```toml
 [build]
   command = "npm install"
-  functions = "."
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/app/:splat"
+  to = "/.netlify/functions/server/:splat"
   status = 200
 ```
 
-**`app.js`** — export handler alongside your existing code:
+**`netlify/functions/server.js`** — export handler alongside your existing code:
 
 ```js
 const serverless = require("serverless-http");
