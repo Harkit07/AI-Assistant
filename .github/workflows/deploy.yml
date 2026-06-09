@@ -48,3 +48,6 @@ jobs:
            echo "ERROR: Backend directory does not exist!"
            exit 1
            fi
+
+      - name: Build Backend Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
