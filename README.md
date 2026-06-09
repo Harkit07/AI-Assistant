@@ -67,49 +67,90 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 ## 📁 Project Structure
 
 AI-Assistant/
+│
 ├── .github/
-│   └── workflows/
-│       └── deploy.yml            # GitHub Actions CI/CD workflow
-├── k8s/
-│   ├── backend-deployment.yaml   # Backend Kubernetes Deployment & Service
-│   ├── frontend-deployment.yaml  # Frontend Kubernetes Deployment & Service
-│   ├── ingress.yaml              # NGINX Ingress rules
-│   └── secrets.yaml              # Kubernetes Secrets (MongoDB URI, JWT secret, etc.)
+│ └── workflows/
+│ ├── ci.yml
+│ └── deploy.yml
+│
 ├── backend/
-│   ├── models/
-│   │   ├── user.js
-│   │   ├── thread.js
-│   │   └── blacklistToken.js
-│   ├── netlify/
-│   │   └── functions/
-│   │       └── server.js         # Netlify serverless entry point
-│   ├── routes/
-│   │   ├── user.js
-│   │   └── chat.js
-│   ├── services/
-│   │   ├── validationResult.js
-│   │   └── user.js
-│   ├── middleware.js
-│   ├── server.js
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env
+│ ├── src/
+│ │ ├── models/
+│ │ │ ├── User.js
+│ │ │ ├── Thread.js
+│ │ │ └── BlacklistToken.js
+│ │ │
+│ │ ├── routes/
+│ │ │ ├── user.routes.js
+│ │ │ └── chat.routes.js
+│ │ │
+│ │ ├── services/
+│ │ │ ├── user.service.js
+│ │ │ └── validation.service.js
+│ │ │
+│ │ ├── middleware/
+│ │ │ └── auth.middleware.js
+│ │ │
+│ │ ├── controllers/
+│ │ │ ├── user.controller.js
+│ │ │ └── chat.controller.js
+│ │ │
+│ │ ├── config/
+│ │ │ └── db.js
+│ │ │
+│ │ └── app.js
+│ │
+│ ├── netlify/
+│ │ └── functions/
+│ │ └── server.js
+│ │
+│ ├── server.js
+│ ├── Dockerfile
+│ ├── package.json
+│ ├── package-lock.json
+│ └── .env.example
+│
 ├── frontend/
-│   ├── src/
-│   │   ├── Sidebar.jsx
-│   │   ├── ChatWindow.jsx
-│   │   ├── Login.jsx
-│   │   ├── MyContext.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env
-├── docker-compose.yml            # Local Docker Compose setup
+│ ├── public/
+│ │
+│ ├── src/
+│ │ ├── components/
+│ │ │ ├── Sidebar.jsx
+│ │ │ ├── ChatWindow.jsx
+│ │ │ └── Login.jsx
+│ │ │
+│ │ ├── context/
+│ │ │ └── MyContext.jsx
+│ │ │
+│ │ ├── pages/
+│ │ │ └── Home.jsx
+│ │ │
+│ │ ├── services/
+│ │ │ └── api.js
+│ │ │
+│ │ ├── App.jsx
+│ │ └── main.jsx
+│ │
+│ ├── Dockerfile
+│ ├── package.json
+│ ├── vite.config.js
+│ └── .env.example
+│
+├── k8s/
+│ ├── backend-deployment.yaml
+│ ├── frontend-deployment.yaml
+│ ├── ingress.yaml
+│ └── secrets.yaml
+│
+├── docs/
+│ ├── architecture.md
+│ ├── api-docs.md
+│ └── deployment.md
+│
+├── docker-compose.yml
 ├── .gitignore
-└── README.md
-
-text
+├── README.md
+└── LICENSE
 
 ---
 
