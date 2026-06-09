@@ -1,4 +1,4 @@
-name: AI Assistant CI/CD
+name: AI Assistant CI/CD (Debug)
 
 on:
   push:
@@ -15,11 +15,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Verify Backend Directory Exists
+        run: |
+          if [ ! -d "./Backend" ]; then
+            echo "Error: Backend directory not found! Please ensure the 'Backend' folder exists in the repository root." >&2
+            exit 1
+          fi
+
+      - name: Verify Frontend Directory Exists
+        run: |
+          if [ ! -d "./Frontend" ]; then
+            echo "Error: Frontend directory not found! Please ensure the 'Frontend' folder exists in the repository root." >&2
+            exit 1
+          fi
+
       - name: Login To Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          # This helps in debugging login issues by showing if secrets are passed
+          DOCKER_USERNAME_DEBUG: ${{ secrets.DOCKER_USERNAME }}
 
       - name: Build Backend Image
         run: |
