@@ -34,12 +34,3 @@ jobs:
           context: ./Frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
-
-      - name: Debug DOCKER_USERNAME
-        run: |
-          if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
-             echo "Username is set (value redacted)"
-            else
-            echo "::error::DOCKER_USERNAME secret is empty!"
-                 exit 1
-             fi
