@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Show Root Files
+        run: ls -la
 
       - name: Verify Backend Directory Exists
         run: |
@@ -20,6 +24,7 @@ jobs:
             echo "Error: Backend directory not found!" >&2
             exit 1
           fi
+          ls -la ./Backend
 
       - name: Verify Frontend Directory Exists
         run: |
@@ -27,6 +32,7 @@ jobs:
             echo "Error: Frontend directory not found!" >&2
             exit 1
           fi
+          ls -la ./Frontend
 
       - name: Login To Docker Hub
         uses: docker/login-action@v3
