@@ -245,6 +245,315 @@ VITE_API_URL=https://your-netlify-site.netlify.app/api
 
 ---
 
+## 🐳 Docker Support
+
+The application is fully containerized using Docker, allowing consistent development and deployment across environments.
+
+### Backend Dockerfile
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 8080
+
+CMD ["node", "server.js"]
+```
+
+### Frontend Dockerfile
+
+```dockerfile
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Build Images
+
+```bash
+# Backend
+docker build -t ai-assistant-backend ./Backend
+
+# Frontend
+docker build -t ai-assistant-frontend ./Frontend
+```
+
+### Run Containers
+
+```bash
+docker run -p 8080:8080 ai-assistant-backend
+docker run -p 5173:80 ai-assistant-frontend
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
+The application is deployed on Kubernetes using Deployments, Services, Secrets, and NGINX Ingress Controller.
+
+### Kubernetes Architecture
+
+```
+Internet
+    │
+    ▼
+NGINX Ingress
+    │
+ ┌──┴─────────────┐
+ ▼                ▼
+Frontend      Backend
+Service       Service
+    │            │
+    ▼            ▼
+Frontend Pods  Backend Pods
+                   │
+                   ▼
+             MongoDB Atlas
+```
+
+### Components
+
+#### Deployments
+
+- Frontend Deployment
+  - Multiple replicas for high availability
+  - Serves React production build through Nginx
+
+- Backend Deployment
+  - Multiple replicas for load balancing
+  - Connects to MongoDB Atlas and OpenAI API
+
+#### Services
+
+```yaml
+frontend-service
+backend-service
+```
+
+Expose frontend and backend pods internally within the cluster.
+
+#### Secrets
+
+Sensitive credentials are stored securely using Kubernetes Secrets:
+
+```yaml
+OPENAI_API_KEY
+MONGODB_URI
+JWT_SECRET
+NODE_ENV
+CLIENT_URL
+```
+
+Apply:
+
+```bash
+kubectl apply -f secrets.yaml
+```
+
+#### Deploy Application
+
+```bash
+kubectl apply -f backend-deployment.yaml
+kubectl apply -f frontend-deployment.yaml
+```
+
+Verify:
+
+```bash
+kubectl get deployments
+kubectl get pods
+kubectl get services
+```
+
+---
+
+## 🌐 Ingress Configuration
+
+NGINX Ingress Controller is used to expose frontend and backend through a single domain.
+
+### Ingress Rules
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ai-assistant.local
+      http:
+        paths:
+          - path: /user
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8080
+
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8080
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+```
+
+Apply:
+
+```bash
+kubectl apply -f ingress.yaml
+```
+
+### Enable NGINX Ingress
+
+```bash
+minikube addons enable ingress
+```
+
+### Start Tunnel
+
+```bash
+minikube tunnel
+```
+
+### Configure Local Host
+
+Add the following entry to your hosts file:
+
+```text
+127.0.0.1 ai-assistant.local
+```
+
+### Access Application
+
+```text
+http://ai-assistant.local
+```
+
+Requests are automatically routed:
+
+```text
+/          → Frontend Service
+/user/*    → Backend Service
+/api/*     → Backend Service
+```
+
+---
+
+## ⚙️ CI/CD Workflow
+
+The project supports automated deployment using GitHub Actions.
+
+### Workflow Overview
+
+```
+Developer Push
+       │
+       ▼
+ GitHub Repository
+       │
+       ▼
+ GitHub Actions
+       │
+ ┌─────┴─────┐
+ ▼           ▼
+Build     Run Tests
+       │
+       ▼
+Docker Build
+       │
+       ▼
+Push Images
+       │
+       ▼
+Deploy to Kubernetes
+```
+
+### CI/CD Features
+
+- Automatic build on every push
+- Dependency installation
+- Docker image creation
+- Kubernetes deployment
+- Environment-based configuration
+- Zero-downtime rolling updates
+
+### Example Workflow
+
+```yaml
+name: Deploy AI Assistant
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Docker Images
+        run: |
+          docker build -t ai-assistant-backend ./Backend
+          docker build -t ai-assistant-frontend ./Frontend
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/
+
+---
+
+## 📈 Scalability & Production Features
+
+- Dockerized Microservice Architecture
+- Kubernetes Orchestration
+- Horizontal Scaling with Replicas
+- Secure Secret Management
+- NGINX Ingress Load Balancing
+- MongoDB Atlas Cloud Database
+- OpenAI API Integration
+- Environment-Based Configuration
+- Production-Ready Deployment Pipeline
+- Rolling Updates with Zero Downtime
+
 ## 👨‍💻 Author
 
 **Harkit Singh**
@@ -259,3 +568,4 @@ VITE_API_URL=https://your-netlify-site.netlify.app/api
 ## 📝 License
 
 This project is open source and free to use.
+```
