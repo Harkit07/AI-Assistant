@@ -67,56 +67,49 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 ## 📁 Project Structure
 
 AI-Assistant/
-├── backend/
-│   ├── models/
-│   │   ├── user.js
-│   │   ├── thread.js
-│   │   └── blacklistToken.js
-│   │
-│   ├── routes/
-│   │   ├── user.js
-│   │   └── chat.js
-│   │
-│   ├── services/
-│   │   ├── validationResult.js
-│   │   └── user.js
-│   │
-│   ├── middleware.js
-│   ├── server.js
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env.example
-│
-├── frontend/
-│   ├── src/
-│   │   ├── Sidebar.jsx
-│   │   ├── ChatWindow.jsx
-│   │   ├── Login.jsx
-│   │   ├── MyContext.jsx
-│   │   └── main.jsx
-│   │
-│   ├── index.html
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env.example
-│
-├── netlify/
-│   └── functions/
-│       └── server.js
-│
-├── k8s/
-│   ├── backend-deployment.yaml
-│   ├── frontend-deployment.yaml
-│   ├── ingress.yaml
-│   └── secrets.yaml
-│
-├── docker-compose.yml
 ├── .github/
-│   └── workflows/
-│       └── deploy.yml
-│
-├── README.md
-└── .gitignore
+│ └── workflows/
+│ └── deploy.yml # GitHub Actions CI/CD workflow
+├── k8s/
+│ ├── backend-deployment.yaml # Backend Kubernetes Deployment & Service
+│ ├── frontend-deployment.yaml # Frontend Kubernetes Deployment & Service
+│ ├── ingress.yaml # NGINX Ingress rules
+│ └── secrets.yaml # Kubernetes Secrets (MongoDB URI, JWT secret, etc.)
+├── backend/
+│ ├── models/
+│ │ ├── user.js
+│ │ ├── thread.js
+│ │ └── blacklistToken.js
+│ ├── netlify/
+│ │ └── functions/
+│ │ └── server.js # Netlify serverless entry point
+│ ├── routes/
+│ │ ├── user.js
+│ │ └── chat.js
+│ ├── services/
+│ │ ├── validationResult.js
+│ │ └── user.js
+│ ├── middleware.js
+│ ├── server.js
+│ ├── Dockerfile
+│ ├── package.json
+│ └── .env
+├── frontend/
+│ ├── src/
+│ │ ├── Sidebar.jsx
+│ │ ├── ChatWindow.jsx
+│ │ ├── Login.jsx
+│ │ ├── MyContext.jsx
+│ │ └── main.jsx
+│ ├── index.html
+│ ├── Dockerfile
+│ ├── package.json
+│ └── .env
+├── docker-compose.yml # Local Docker Compose setup
+├── .gitignore
+└── README.md
+
+text
 
 ---
 
