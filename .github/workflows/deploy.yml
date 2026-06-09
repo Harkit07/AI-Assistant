@@ -1,12 +1,10 @@
-name: AI Assistant CI/CD (Modernized)
+name: Docker Credential Tester
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  docker:
+  test-credentials:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -24,16 +22,23 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Backend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
+      - name: Verify Docker Login Status
+        run: |
+          docker info | grep Username
+          echo "Docker login successful. Proceeding to test push permissions."
 
-      - name: Build and Push Frontend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Frontend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+      - name: Build a Dummy Image
+        run: |
+          echo "FROM alpine" > Dockerfile
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest .
+
+      - name: Push Dummy Image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest
+          echo "Dummy image pushed successfully. Your PAT has sufficient scopes."
+
+      - name: Clean up Dummy Image (Optional)
+        if: always()
+        run: |
+          docker rmi ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest || true
+          rm Dockerfile
