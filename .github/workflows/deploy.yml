@@ -1,4 +1,4 @@
-name: AI Assistant CI/CD
+name: Debug Repository Structure
 
 on:
   push:
@@ -6,64 +6,47 @@ on:
       - main
 
 jobs:
-  docker:
+  debug:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: DEBUG - List all files in runner
+      - name: List all files and folders
         run: |
-          echo "Current directory: $(pwd)"
-          echo "Root folder contents:"
+          echo "=== Current directory ==="
+          pwd
+          echo ""
+          echo "=== Root contents ==="
           ls -la
           echo ""
-          echo "Looking for Backend folder:"
-          if [ -d "./Backend" ]; then
-            echo "✅ Backend folder exists. Contents:"
-            ls -la ./Backend
-            if [ -f "./Backend/Dockerfile" ]; then
-              echo "✅ Dockerfile found in Backend"
+          echo "=== Looking for 'Backend' (case-sensitive) ==="
+          if [ -d "Backend" ]; then
+            echo "✅ Found 'Backend' directory"
+            ls -la Backend/
+            if [ -f "Backend/Dockerfile" ]; then
+              echo "✅ Backend/Dockerfile exists"
             else
-              echo "❌ Dockerfile NOT found in Backend"
-              exit 1
+              echo "❌ Backend/Dockerfile MISSING"
             fi
+          elif [ -d "backend" ]; then
+            echo "⚠️ Found 'backend' (lowercase) – your workflow uses 'Backend'"
+            ls -la backend/
           else
-            echo "❌ Backend folder does NOT exist!"
-            echo "Available folders in root:"
-            ls -d */
-            exit 1
+            echo "❌ No 'Backend' or 'backend' directory found"
           fi
           echo ""
-          echo "Looking for Frontend folder:"
-          if [ -d "./Frontend" ]; then
-            echo "✅ Frontend folder exists. Contents:"
-            ls -la ./Frontend
-            if [ -f "./Frontend/Dockerfile" ]; then
-              echo "✅ Dockerfile found in Frontend"
+          echo "=== Looking for 'Frontend' ==="
+          if [ -d "Frontend" ]; then
+            echo "✅ Found 'Frontend' directory"
+            ls -la Frontend/
+            if [ -f "Frontend/Dockerfile" ]; then
+              echo "✅ Frontend/Dockerfile exists"
             else
-              echo "❌ Dockerfile NOT found in Frontend"
-              exit 1
+              echo "❌ Frontend/Dockerfile MISSING"
             fi
+          elif [ -d "frontend" ]; then
+            echo "⚠️ Found 'frontend' (lowercase)"
           else
-            echo "❌ Frontend folder does NOT exist!"
-            exit 1
+            echo "❌ No 'Frontend' or 'frontend' directory found"
           fi
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build Backend Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
-
-      - name: Build Frontend Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
-
-      - name: Push Backend Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
-
-      - name: Push Frontend Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
