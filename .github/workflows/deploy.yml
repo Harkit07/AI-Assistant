@@ -8,9 +8,6 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -18,14 +15,14 @@ jobs:
       - name: Verify Backend Directory Exists
         run: |
           if [ ! -d "./Backend" ]; then
-            echo "Error: Backend directory not found! Please ensure the 'Backend' folder exists in the repository root." >&2
+            echo "Error: Backend directory not found!" >&2
             exit 1
           fi
 
       - name: Verify Frontend Directory Exists
         run: |
           if [ ! -d "./Frontend" ]; then
-            echo "Error: Frontend directory not found! Please ensure the 'Frontend' folder exists in the repository root." >&2
+            echo "Error: Frontend directory not found!" >&2
             exit 1
           fi
 
@@ -34,26 +31,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-        env:
-          # This helps in debugging login issues by showing if secrets are passed
-          DOCKER_USERNAME_DEBUG: ${{ secrets.DOCKER_USERNAME }}
 
       - name: Build Backend Image
-        run: |
-          docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
 
       - name: Build Frontend Image
-        run: |
-          docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
 
       - name: Push Backend Image
-        run: |
-          docker push \
-          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
 
       - name: Push Frontend Image
-        run: |
-          docker push \
-          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
