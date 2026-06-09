@@ -1,4 +1,4 @@
-name: AI Assistant CI/CD (Debug)
+name: AI Assistant CI/CD (Modernized)
 
 on:
   push:
@@ -15,45 +15,25 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Verify Backend Directory Exists
-        run: |
-          if [ ! -d "./Backend" ]; then
-            echo "Error: Backend directory not found! Please ensure the 'Backend' folder exists in the repository root." >&2
-            exit 1
-          fi
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Verify Frontend Directory Exists
-        run: |
-          if [ ! -d "./Frontend" ]; then
-            echo "Error: Frontend directory not found! Please ensure the 'Frontend' folder exists in the repository root." >&2
-            exit 1
-          fi
-
-      - name: Login To Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-        env:
-          # This helps in debugging login issues by showing if secrets are passed
-          DOCKER_USERNAME_DEBUG: ${{ secrets.DOCKER_USERNAME }}
 
-      - name: Build Backend Image
-        run: |
-          docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Backend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
 
-      - name: Build Frontend Image
-        run: |
-          docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
-
-      - name: Push Backend Image
-        run: |
-          docker push \
-          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
-
-      - name: Push Frontend Image
-        run: |
-          docker push \
-          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
