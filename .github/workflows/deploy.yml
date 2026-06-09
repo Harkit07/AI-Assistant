@@ -1,7 +1,9 @@
-name: Docker Credentials Tester
+name: Docker Credential Tester (on push)
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   test-credentials:
