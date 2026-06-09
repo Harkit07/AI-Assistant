@@ -67,90 +67,56 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 ## 📁 Project Structure
 
 AI-Assistant/
-│
-├── .github/
-│ └── workflows/
-│ ├── ci.yml
-│ └── deploy.yml
-│
 ├── backend/
-│ ├── src/
-│ │ ├── models/
-│ │ │ ├── User.js
-│ │ │ ├── Thread.js
-│ │ │ └── BlacklistToken.js
-│ │ │
-│ │ ├── routes/
-│ │ │ ├── user.routes.js
-│ │ │ └── chat.routes.js
-│ │ │
-│ │ ├── services/
-│ │ │ ├── user.service.js
-│ │ │ └── validation.service.js
-│ │ │
-│ │ ├── middleware/
-│ │ │ └── auth.middleware.js
-│ │ │
-│ │ ├── controllers/
-│ │ │ ├── user.controller.js
-│ │ │ └── chat.controller.js
-│ │ │
-│ │ ├── config/
-│ │ │ └── db.js
-│ │ │
-│ │ └── app.js
-│ │
-│ ├── netlify/
-│ │ └── functions/
-│ │ └── server.js
-│ │
-│ ├── server.js
-│ ├── Dockerfile
-│ ├── package.json
-│ ├── package-lock.json
-│ └── .env.example
+│   ├── models/
+│   │   ├── user.js
+│   │   ├── thread.js
+│   │   └── blacklistToken.js
+│   │
+│   ├── routes/
+│   │   ├── user.js
+│   │   └── chat.js
+│   │
+│   ├── services/
+│   │   ├── validationResult.js
+│   │   └── user.js
+│   │
+│   ├── middleware.js
+│   ├── server.js
+│   ├── Dockerfile
+│   ├── package.json
+│   └── .env.example
 │
 ├── frontend/
-│ ├── public/
-│ │
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── Sidebar.jsx
-│ │ │ ├── ChatWindow.jsx
-│ │ │ └── Login.jsx
-│ │ │
-│ │ ├── context/
-│ │ │ └── MyContext.jsx
-│ │ │
-│ │ ├── pages/
-│ │ │ └── Home.jsx
-│ │ │
-│ │ ├── services/
-│ │ │ └── api.js
-│ │ │
-│ │ ├── App.jsx
-│ │ └── main.jsx
-│ │
-│ ├── Dockerfile
-│ ├── package.json
-│ ├── vite.config.js
-│ └── .env.example
+│   ├── src/
+│   │   ├── Sidebar.jsx
+│   │   ├── ChatWindow.jsx
+│   │   ├── Login.jsx
+│   │   ├── MyContext.jsx
+│   │   └── main.jsx
+│   │
+│   ├── index.html
+│   ├── Dockerfile
+│   ├── package.json
+│   └── .env.example
+│
+├── netlify/
+│   └── functions/
+│       └── server.js
 │
 ├── k8s/
-│ ├── backend-deployment.yaml
-│ ├── frontend-deployment.yaml
-│ ├── ingress.yaml
-│ └── secrets.yaml
-│
-├── docs/
-│ ├── architecture.md
-│ ├── api-docs.md
-│ └── deployment.md
+│   ├── backend-deployment.yaml
+│   ├── frontend-deployment.yaml
+│   ├── ingress.yaml
+│   └── secrets.yaml
 │
 ├── docker-compose.yml
-├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+│
 ├── README.md
-└── LICENSE
+└── .gitignore
 
 ---
 
