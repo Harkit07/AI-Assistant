@@ -3,7 +3,7 @@ import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
 import { useContext, useState, useEffect } from "react";
 import { ScaleLoader } from "react-spinners";
-import Login from "./Login.jsx";
+import Login from "./LoginTemp.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
 
