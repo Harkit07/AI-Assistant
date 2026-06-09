@@ -12,6 +12,44 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: DEBUG - List all files in runner
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Root folder contents:"
+          ls -la
+          echo ""
+          echo "Looking for Backend folder:"
+          if [ -d "./Backend" ]; then
+            echo "✅ Backend folder exists. Contents:"
+            ls -la ./Backend
+            if [ -f "./Backend/Dockerfile" ]; then
+              echo "✅ Dockerfile found in Backend"
+            else
+              echo "❌ Dockerfile NOT found in Backend"
+              exit 1
+            fi
+          else
+            echo "❌ Backend folder does NOT exist!"
+            echo "Available folders in root:"
+            ls -d */
+            exit 1
+          fi
+          echo ""
+          echo "Looking for Frontend folder:"
+          if [ -d "./Frontend" ]; then
+            echo "✅ Frontend folder exists. Contents:"
+            ls -la ./Frontend
+            if [ -f "./Frontend/Dockerfile" ]; then
+              echo "✅ Dockerfile found in Frontend"
+            else
+              echo "❌ Dockerfile NOT found in Frontend"
+              exit 1
+            fi
+          else
+            echo "❌ Frontend folder does NOT exist!"
+            exit 1
+          fi
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
@@ -29,25 +67,3 @@ jobs:
 
       - name: Push Frontend Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
-
-      - name: Debug Backend directory
-        run: |
-          echo "Contents of current directory:"
-          ls -la
-           echo "Checking Backend directory:"
-          if [ -d "./Backend" ]; then
-          echo "Backend exists. Contents:"
-            ls -la ./Backend
-          if [ -f "./Backend/Dockerfile" ]; then
-          echo "Dockerfile found in Backend"
-            else
-           echo "ERROR: Dockerfile NOT found in Backend"
-           exit 1
-             fi
-           else
-           echo "ERROR: Backend directory does not exist!"
-           exit 1
-           fi
-
-      - name: Build Backend Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
