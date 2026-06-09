@@ -29,3 +29,22 @@ jobs:
 
       - name: Push Frontend Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+
+      - name: Debug Backend directory
+        run: |
+          echo "Contents of current directory:"
+          ls -la
+           echo "Checking Backend directory:"
+          if [ -d "./Backend" ]; then
+          echo "Backend exists. Contents:"
+            ls -la ./Backend
+          if [ -f "./Backend/Dockerfile" ]; then
+          echo "Dockerfile found in Backend"
+            else
+           echo "ERROR: Dockerfile NOT found in Backend"
+           exit 1
+             fi
+           else
+           echo "ERROR: Backend directory does not exist!"
+           exit 1
+           fi
