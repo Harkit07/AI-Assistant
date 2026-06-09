@@ -29,3 +29,8 @@ jobs:
 
       - name: Push Frontend Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+
+      - name: Check secrets exist
+        run: |
+          [ -n "${{ secrets.DOCKER_USERNAME }}" ] && echo "Username OK" || echo "Username missing"
+          [ -n "${{ secrets.DOCKER_PASSWORD }}" ] && echo "Password OK" || echo "Password missing"
