@@ -1,4 +1,4 @@
-name: Docker Credential Tester (on push)
+name: AI Assistant CI/CD (Debug)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test-credentials:
+  docker:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -15,32 +15,45 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Verify Backend Directory Exists
+        run: |
+          if [ ! -d "./Backend" ]; then
+            echo "Error: Backend directory not found! Please ensure the 'Backend' folder exists in the repository root." >&2
+            exit 1
+          fi
 
-      - name: Login to Docker Hub
+      - name: Verify Frontend Directory Exists
+        run: |
+          if [ ! -d "./Frontend" ]; then
+            echo "Error: Frontend directory not found! Please ensure the 'Frontend' folder exists in the repository root." >&2
+            exit 1
+          fi
+
+      - name: Login To Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        env:
+          # This helps in debugging login issues by showing if secrets are passed
+          DOCKER_USERNAME_DEBUG: ${{ secrets.DOCKER_USERNAME }}
 
-      - name: Verify Docker Login Status
+      - name: Build Backend Image
         run: |
-          docker info | grep Username
-          echo "Docker login successful. Proceeding to test push permissions."
+          docker build \
+          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
 
-      - name: Build a Dummy Image
+      - name: Build Frontend Image
         run: |
-          echo "FROM alpine" > Dockerfile
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest .
+          docker build \
+          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
 
-      - name: Push Dummy Image to Docker Hub
+      - name: Push Backend Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest
-          echo "Dummy image pushed successfully. Your PAT has sufficient scopes."
+          docker push \
+          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
 
-      - name: Clean up Dummy Image (Optional)
-        if: always()
+      - name: Push Frontend Image
         run: |
-          docker rmi ${{ secrets.DOCKER_USERNAME }}/dummy-image:latest || true
-          rm Dockerfile
+          docker push \
+          ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
