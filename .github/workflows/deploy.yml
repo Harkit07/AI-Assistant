@@ -22,14 +22,12 @@ jobs:
       - name: Build Backend Image
         run: |
           docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest \
-          ./Backend
+          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest ./Backend
 
       - name: Build Frontend Image
         run: |
           docker build \
-          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest \
-          ./Frontend
+          -t ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest ./Frontend
 
       - name: Push Backend Image
         run: |
