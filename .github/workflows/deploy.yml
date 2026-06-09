@@ -1,4 +1,4 @@
-name: Docker Credential Tester
+name: Docker Credentials Tester
 
 on:
   workflow_dispatch:
