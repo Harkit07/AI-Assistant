@@ -39,7 +39,7 @@ function Chat({ showLogin, setShowLogin }) {
         {/* All messages except the last */}
         {prevChats?.slice(0, -1).map((chat, idx) => (
           <div
-            key={idx}
+            key={`${chat.role}-${idx}`}
             className={
               chat.role === "user"
                 ? "flex justify-end text-sm"

@@ -8,12 +8,12 @@ import axios from "axios";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
 
   const [user, setUser] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [reply, setReply] = useState(null);
-  const [currThreadId, setCurrThreadId] = useState(uuidv1());
+  const [currThreadId, setCurrThreadId] = useState(() => uuidv1());
   const [prevChats, setPrevChats] = useState([]);
   const [newChat, setNewChat] = useState(true);
   const [allThreads, setAllThreads] = useState([]);
@@ -35,7 +35,6 @@ function App() {
               headers: { Authorization: `Bearer ${token}` },
             },
           );
-
           if (userRes.status === 200) {
             setUser(userRes.data.user);
           }
@@ -43,50 +42,51 @@ function App() {
           setUser(null);
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [token]);
 
   const providerValues = {
+    loading,
+    setLoading,
     token,
     setToken,
     user,
     setUser,
-    loading,
     prompt,
     setPrompt,
     reply,
     setReply,
     currThreadId,
     setCurrThreadId,
-    newChat,
-    setNewChat,
     prevChats,
     setPrevChats,
+    newChat,
+    setNewChat,
     allThreads,
     setAllThreads,
+    isMobile,
   };
 
   return (
-    // min-h-dvh: uses dynamic viewport height on mobile (excludes browser chrome like address bar)
-    // min-h-screen: fallback for browsers that don't support dvh
-    <div className="flex min-h-dvh bg-[#212121] text-[#ececec] font-sans overflow-hidden">
+    <MyContext.Provider value={providerValues}>
+      <div className="flex min-h-dvh bg-[#212121] text-[#ececec] font-sans overflow-hidden">
+        <Sidebar />
+        <ChatWindow />
+      </div>
       <ToastContainer
         position={isMobile ? "bottom-center" : "top-center"}
         autoClose={2000}
-        // Responsive styles via toastClassName / bodyClassName
         toastClassName={() =>
           [
             "relative flex items-center justify-between",
             "rounded-lg shadow-lg overflow-hidden cursor-pointer",
             "bg-[#2e2e2e] text-[#ececec]",
-            // Smaller padding and font on mobile
             "px-3 py-2 sm:px-4 sm:py-3",
             "text-xs sm:text-sm",
             "min-h-[44px] sm:min-h-[56px]",
@@ -95,20 +95,15 @@ function App() {
         }
         bodyClassName={() => "flex items-center gap-2 p-0 m-0 w-full"}
         style={{
-          // Keep toasts away from edges on mobile
           bottom: isMobile ? "1rem" : undefined,
           top: !isMobile ? "1rem" : undefined,
           left: isMobile ? "50%" : undefined,
           transform: isMobile ? "translateX(-50%)" : undefined,
-          width: isMobile ? "calc(100% - 2rem)" : "320px",
-          maxWidth: "100%",
+          width: isMobile ? "calc(100% - 2rem)" : "auto",
+          maxWidth: isMobile ? "28rem" : undefined,
         }}
       />
-      <MyContext.Provider value={providerValues}>
-        <Sidebar />
-        <ChatWindow />
-      </MyContext.Provider>
-    </div>
+    </MyContext.Provider>
   );
 }
 

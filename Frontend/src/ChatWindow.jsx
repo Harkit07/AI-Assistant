@@ -1,7 +1,7 @@
 import "./ChatWindow.css";
 import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { ScaleLoader } from "react-spinners";
 import Login from "./Login.jsx";
 import axios from "axios";
@@ -22,8 +22,8 @@ function ChatWindow() {
 
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [currPrompt, setCurrPrompt] = useState("");
   const [showLogin, setShowLogin] = useState(false);
+  const currPromptRef = useRef("");
 
   useEffect(() => {
     const fetchThreadHistory = async () => {
@@ -48,6 +48,7 @@ function ChatWindow() {
   }, [currThreadId, token, setPrevChats, setNewChat]);
 
   const getReply = async () => {
+    currPromptRef.current = prompt;
     const currentToken = localStorage.getItem("token");
     if (!currentToken) {
       toast.info("Please login to start chatting!");
@@ -58,7 +59,6 @@ function ChatWindow() {
 
     setLoading(true);
     setNewChat(false);
-    setCurrPrompt(prompt);
 
     try {
       const response = await axios.post(
@@ -82,16 +82,17 @@ function ChatWindow() {
   };
 
   useEffect(() => {
-    if (currPrompt && reply) {
+    if (currPromptRef.current && reply) {
       setPrevChats((prev) => [
         ...prev,
-        { role: "user", content: currPrompt },
+        { role: "user", content: currPromptRef.current },
         { role: "assistant", content: reply },
       ]);
       setPrompt("");
+      setReply(null);
       setLoading(false);
     }
-  }, [reply]);
+  }, [reply, setPrevChats, setPrompt, setReply]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -110,69 +111,75 @@ function ChatWindow() {
         localStorage.removeItem("token");
         setToken(null);
         toast.success("Logout successful!");
-        setPrevChats([]);
-        setNewChat(true);
       }
-    } catch (error) {
-      console.error(error.response?.data || error.message);
+    } catch (err) {
+      console.error(err);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  const handleKeyDownToggle = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setIsOpen((prev) => !prev);
     }
   };
 
   return (
-    <div className="bg-[#212121] h-screen w-full flex flex-col justify-between items-center text-center overflow-hidden">
-      <Login visible={showLogin} setVisible={setShowLogin} />
+    <div className="chatwindow-root flex flex-col justify-between items-center h-screen flex-1 w-full bg-[#212121] text-white relative">
+      {/* Top Navbar Header */}
+      <div className="w-full flex justify-between items-center px-4 py-3 border-b border-white/5 bg-[#212121] relative z-40">
+        <div className="text-sm font-medium text-white/40 font-sans tracking-wide ml-12 sm:ml-0">
+          Model v1.0
+        </div>
 
-      {/* Navbar */}
-      <div className="w-full flex justify-between items-center pl-14 md:pl-0">
-        <span className="m-4 mx-4 md:mx-8 text-sm md:text-base">
-          ChatGPT <i className="fa-solid fa-chevron-down" />
-        </span>
+        <div className="relative">
+          <div
+            className="flex items-center justify-center h-8 w-8 rounded-full cursor-pointer overflow-hidden border border-white/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen((prev) => !prev);
+            }}
+            onKeyDown={handleKeyDownToggle}
+            role="button"
+            tabIndex={0}
+            aria-label="Toggle user menu"
+          >
+            <img
+              src="https://api.dicebear.com/7.x/bottts/svg?seed=user"
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-        <div
-          className="relative m-4 mx-4 md:mx-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen((v) => !v);
-          }}
-        >
-          <span className="bg-[#339cff] h-6 w-6 rounded-full flex items-center justify-center cursor-pointer">
-            <i className="fa-solid fa-user text-xs" />
-          </span>
-
-          {/* Dropdown */}
           {isOpen && (
-            <div className="absolute top-9 right-0 w-36 bg-[#323232] px-2 py-1.5 rounded-md text-left z-1000 shadow-md">
-              {!token ? (
-                <div
-                  className="text-sm my-1.5 py-2 px-0.5 cursor-pointer hover:text-white transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowLogin(true);
-                    setIsOpen(false);
-                  }}
-                >
-                  <i className="fa-regular fa-user mr-1" /> Login/Signup
-                </div>
-              ) : (
-                <div
-                  className="text-sm my-1.5 py-2 px-0.5 cursor-pointer hover:text-white transition-colors"
+            <div className="absolute right-0 mt-2 w-40 rounded-xl shadow-2xl p-1.5 border border-white/5 bg-[#171717]">
+              {token ? (
+                <button
+                  type="button"
                   onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 text-xs font-normal text-white/70 hover:bg-white/5 hover:text-white rounded-lg transition-colors cursor-pointer"
                 >
-                  <i className="fa-solid fa-arrow-right-from-bracket mr-1" />{" "}
                   Log out
-                </div>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowLogin(true)}
+                  className="w-full text-left px-3 py-2 text-xs font-normal text-white/70 hover:bg-white/5 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  Log in
+                </button>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Chat messages */}
       <Chat showLogin={showLogin} setShowLogin={setShowLogin} />
 
       <ScaleLoader color="#fff" loading={loading} />
 
-      {/* Input area */}
       <div className="w-full flex flex-col justify-center items-center pb-2 px-3 md:px-6">
         <div className="w-full max-w-[95%] md:max-w-2xl lg:max-w-175 relative flex justify-between items-center">
           <input
@@ -182,21 +189,26 @@ function ChatWindow() {
             onKeyDown={(e) => e.key === "Enter" && !loading && getReply()}
             disabled={loading}
             className="w-full"
+            aria-label="Chat prompt input"
           />
-          <div
+          <button
+            type="button"
             id="submit"
             onClick={getReply}
-            className="cursor-pointer h-9 w-9 text-xl absolute right-3 flex items-center justify-center"
+            aria-label="Send prompt"
+            disabled={loading}
+            className="cursor-pointer h-9 w-9 text-xl absolute right-3 flex items-center justify-center bg-transparent border-none text-[#b4b4b4] hover:text-white transition-colors"
           >
             <i className="fa-solid fa-paper-plane" />
-          </div>
+          </button>
         </div>
 
-        <p className="text-[10px] md:text-xs py-2 px-2 text-[#b4b4b4] text-center">
-          ChatGPT can make mistakes. Check important info. See Cookie
-          Preferences.
+        <p className="text-[10px] md:text-xs py-2 px-4 text-center text-white/20 font-light select-none tracking-wide">
+          AI can make mistakes. Consider checking important information.
         </p>
       </div>
+
+      <Login visible={showLogin} setVisible={setShowLogin} />
     </div>
   );
 }

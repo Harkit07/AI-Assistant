@@ -73,6 +73,7 @@ function InputField({
   focusKey,
   focusedField,
   setFocusedField,
+  ariaLabel,
   children,
 }) {
   const isFocused = focusedField === focusKey;
@@ -85,12 +86,11 @@ function InputField({
         onFocus={() => setFocusedField(focusKey)}
         onBlur={() => setFocusedField(null)}
         placeholder={placeholder}
+        aria-label={ariaLabel}
         className={`
           w-full rounded-xl px-4 text-sm font-light text-white outline-none
           transition-all duration-200
-          /* mobile: taller tap target */
           py-3.5 md:py-3
-          /* right padding when eye icon present */
           ${children ? "pr-11" : ""}
           ${
             isFocused
@@ -182,118 +182,102 @@ export default function Login({ onClose, visible, setVisible }) {
 
   if (!visible) return null;
 
+  const handleOverlayKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      if (e.target === e.currentTarget) {
+        e.preventDefault();
+        handleClose();
+      }
+    }
+  };
+
   return (
     <>
-      {/* Keyframe animations & grain — cannot be done in Tailwind */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
         .login-root * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
-        .login-title  { font-family: 'Instrument Serif', serif; }
-
+        .login-title { font-family: 'Instrument Serif', serif; }
         @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalIn   { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .overlay-anim { animation: overlayIn 0.3s ease forwards; }
-        .modal-anim   { animation: modalIn 0.38s cubic-bezier(0.16,1,0.3,1) forwards; }
-
+        .modal-anim { animation: modalIn 0.38s cubic-bezier(0.16,1,0.3,1) forwards; }
         .close-spin { transition: transform 0.25s ease, background 0.2s ease; }
-        .close-spin:hover { transform: rotate(90deg); background: rgba(255,255,255,0.1) !important; }
-        .login-btn:hover  { background: #e4e4e4 !important; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,0.13); }
-        .login-btn:active { transform: translateY(0); box-shadow: none; }
-        .eye-btn { color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; display: flex; align-items: center; transition: color 0.15s ease; }
-        .eye-btn:hover { color: rgba(255,255,255,0.6); }
-        .link-hover { transition: color 0.15s ease; }
-        .link-hover:hover { color: rgba(255,255,255,0.65) !important; }
-
-        .grain {
-          position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-          opacity: 0.5;
-        }
-        .glow-ring {
-          position: absolute; inset: -1px; border-radius: 1rem; pointer-events: none;
-          background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(255,255,255,0.03) 100%);
-        }
-        input::placeholder { color: rgba(255,255,255,0.25); }
-        input:-webkit-autofill, input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0 1000px #141415 inset !important;
-          -webkit-text-fill-color: #fff !important;
-        }
+        .close-spin:hover { transform: rotate(90deg); background: rgba(255,255,255,0.06); }
+        .close-spin:active { transform: rotate(90deg) scale(0.92); }
+        .glow-ring { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; border: 1px solid transparent; background: radial-gradient(circle at 50% -20%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 65%) border-box; }
+        .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.015; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3联%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
+        .login-btn { transition: transform 0.15s ease, background-color 0.15s ease, opacity 0.15s ease; box-shadow: 0 4px 12px rgba(255,255,255,0.05); }
+        .login-btn:hover { background-color: #f0f0f2; transform: translateY(-1px); }
+        .login-btn:active { transform: translateY(0) scale(0.98); }
+        .link-hover { transition: color 0.15s ease, opacity 0.15s ease; }
+        .link-hover:hover { color: #fff !important; opacity: 0.9 !important; }
       `}</style>
 
-      {/* Overlay */}
       <div
         className="login-root overlay-anim fixed inset-0 flex items-center justify-center px-4 z-50"
         style={{
           background: "rgba(0,0,0,0.65)",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
         onClick={(e) => e.target === e.currentTarget && handleClose()}
+        onKeyDown={handleOverlayKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label="Close login modal overlay"
       >
-        {/*
-          Modal sizing:
-            mobile  (default)  : w-[calc(100vw-2rem)]  p-6
-            tablet  md (768px) : max-w-[22rem]         p-7
-            desktop lg (1024px): max-w-[352px]         p-8
-        */}
         <div
-          className="
-            modal-anim relative w-[calc(100vw-2rem)] rounded-2xl overflow-hidden
-            p-6
-            md:w-full md:max-w-88 md:p-7
-            lg:max-w-88 lg:p-8
-          "
+          className="modal-anim relative w-full max-w-88 rounded-2xl p-8 overflow-hidden"
           style={{
             background: "linear-gradient(160deg, #141415 0%, #0f0f10 100%)",
             border: "1px solid rgba(255,255,255,0.07)",
             boxShadow:
               "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset",
           }}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
           <div className="grain" />
           <div className="glow-ring" />
 
           <div className="relative z-10">
-            {/* Close button */}
             <button
+              type="button"
               onClick={handleClose}
-              className="close-spin absolute -top-1 -right-1 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70"
-              style={{ background: "transparent" }}
+              aria-label="Close modal"
+              className="close-spin absolute -top-1 -right-1 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 bg-transparent border-none cursor-pointer"
             >
               <CloseIcon />
             </button>
 
-            {/* Header */}
             <div className="text-center mb-7">
-              {/*
-                Title font size:
-                  mobile  : text-2xl  (1.5rem)
-                  tablet  : text-[1.6rem]
-                  desktop : text-[1.75rem]
-              */}
-              <h2 className="login-title text-white text-2xl md:text-[1.6rem] lg:text-[1.75rem] leading-tight mb-2.5">
+              <h2 className="login-title text-white text-[1.75rem] leading-tight mb-2.5">
                 {isSignup ? "Create an account" : "Log in or sign up"}
               </h2>
-              <p className="text-white/35 text-[0.8rem] leading-relaxed font-light">
+              <p
+                className="text-[0.8rem] leading-relaxed font-light"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+              >
                 Get smarter responses and upload
                 <br />
                 files, images, and more.
               </p>
             </div>
 
-            {/* Fields */}
             <div className="flex flex-col gap-2.5 mb-3">
               {isSignup && (
                 <InputField
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Name"
+                  placeholder="Full name"
                   focusKey="name"
                   focusedField={focusedField}
                   setFocusedField={setFocusedField}
+                  ariaLabel="Full name"
                 />
               )}
+
               <InputField
                 type="email"
                 value={email}
@@ -302,7 +286,9 @@ export default function Login({ onClose, visible, setVisible }) {
                 focusKey="email"
                 focusedField={focusedField}
                 setFocusedField={setFocusedField}
+                ariaLabel="Email address"
               />
+
               <InputField
                 type={showPass ? "text" : "password"}
                 value={password}
@@ -311,49 +297,48 @@ export default function Login({ onClose, visible, setVisible }) {
                 focusKey="password"
                 focusedField={focusedField}
                 setFocusedField={setFocusedField}
+                ariaLabel="Password"
               >
                 <button
-                  onClick={() => setShowPass((v) => !v)}
-                  className="eye-btn"
-                  tabIndex={-1}
                   type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  aria-label={showPass ? "Hide password" : "Show password"}
+                  className="text-white/30 hover:text-white/60 transition-colors bg-transparent border-none cursor-pointer flex items-center justify-center p-1 rounded-md"
+                  tabIndex={-1}
                 >
                   <EyeIcon open={showPass} />
                 </button>
               </InputField>
             </div>
 
-            {/* Forgot password */}
             {!isSignup && (
               <div className="flex justify-end mb-5">
-                <a
-                  href="#"
-                  className="link-hover text-[0.73rem] font-light"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
+                <button
+                  type="button"
+                  className="link-hover text-[0.73rem] font-light text-white/30 bg-transparent border-none cursor-pointer"
                 >
                   Forgot password?
-                </a>
+                </button>
               </div>
             )}
 
-            {/* Submit button — taller on mobile for easy tap */}
             <div className={isSignup ? "mt-5" : ""}>
               <button
+                type="button"
                 onClick={handleSubmit}
-                className="login-btn w-full rounded-xl px-4 font-semibold text-[#0f0f10] tracking-tight transition-all duration-200 py-3.5 md:py-3 text-sm"
-                style={{ background: "#ffffff" }}
+                className="login-btn w-full rounded-xl px-4 py-3 text-sm font-semibold text-[#0f0f10] tracking-tight bg-white cursor-pointer"
               >
                 {isSignup ? "Sign up" : "Continue"}
               </button>
             </div>
 
-            {/* Switch mode */}
             <p
               className="text-center mt-4 text-[0.75rem] font-light"
               style={{ color: "rgba(255,255,255,0.3)" }}
             >
               {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
               <button
+                type="button"
                 onClick={switchMode}
                 className="link-hover underline underline-offset-2 bg-transparent border-none cursor-pointer text-[0.75rem]"
                 style={{ color: "rgba(255,255,255,0.6)" }}
@@ -362,27 +347,26 @@ export default function Login({ onClose, visible, setVisible }) {
               </button>
             </p>
 
-            {/* Legal */}
             <p
               className="text-center mt-4 text-[0.7rem] font-light leading-relaxed"
               style={{ color: "rgba(255,255,255,0.2)" }}
             >
               By continuing, you agree to our{" "}
-              <a
-                href="#"
-                className="link-hover underline underline-offset-2"
+              <button
+                type="button"
+                className="link-hover underline underline-offset-2 bg-transparent border-none text-[0.7rem] p-0 font-light cursor-pointer"
                 style={{ color: "rgba(255,255,255,0.38)" }}
               >
                 Terms
-              </a>{" "}
+              </button>{" "}
               and{" "}
-              <a
-                href="#"
-                className="link-hover underline underline-offset-2"
+              <button
+                type="button"
+                className="link-hover underline underline-offset-2 bg-transparent border-none text-[0.7rem] p-0 font-light cursor-pointer"
                 style={{ color: "rgba(255,255,255,0.38)" }}
               >
                 Privacy Policy
-              </a>
+              </button>
               .
             </p>
           </div>
