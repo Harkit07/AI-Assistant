@@ -71,11 +71,11 @@ AI-Assistant/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml                # GitHub Actions CI/CD workflow
-├── k8s/
-│   ├── backend-deployment.yaml       # Backend Kubernetes Deployment & Service
-│   ├── frontend-deployment.yaml      # Frontend Kubernetes Deployment & Service
-│   ├── ingress.yaml                  # NGINX Ingress rules
-│   └── secrets.yaml                  # Kubernetes Secrets
+├── k8s/                              # Kubernetes manifests
+│   ├── backend-deployment.yaml
+│   ├── frontend-deployment.yaml
+│   ├── ingress.yaml
+│   └── secrets.yaml
 ├── backend/
 │   ├── models/
 │   │   ├── user.js
@@ -97,16 +97,26 @@ AI-Assistant/
 │   └── .env
 ├── frontend/
 │   ├── src/
-│   │   ├── Sidebar.jsx
-│   │   ├── ChatWindow.jsx
-│   │   ├── Login.jsx
-│   │   ├── MyContext.jsx
-│   │   └── main.jsx
+│   │   ├── AuthContext.jsx           # Authentication state (JWT, user)
+│   │   ├── ChatContext.jsx           # Chat state (prompt, threads, history)
+│   │   ├── UIContext.jsx             # UI state (mobile detection)
+│   │   ├── MyContext.jsx             # Compatibility layer (re-exports new contexts)
+│   │   ├── App.jsx                   # Root component with providers
+│   │   ├── Sidebar.jsx               # Thread list, new chat, delete thread
+│   │   ├── ChatWindow.jsx            # Main chat UI, input, message sending
+│   │   ├── Chat.jsx                  # Renders messages with Markdown
+│   │   ├── Login.jsx                 # Login/signup modal
+│   │   ├── main.jsx                  # Entry point
+│   │   ├── index.css                 # Tailwind imports
+│   │   ├── App.css                   # Global font styles
+│   │   ├── Chat.css                  # Markdown code block styling
+│   │   ├── ChatWindow.css            # Input & chat window styles
+│   │   └── Sidebar.css               # Sidebar hover & delete button styles
 │   ├── index.html
 │   ├── Dockerfile
 │   ├── package.json
 │   └── .env
-├── docker-compose.yml                # Local Docker Compose setup
+├── docker-compose.yml
 ├── .gitignore
 └── README.md
 
