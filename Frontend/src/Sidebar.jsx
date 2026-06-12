@@ -1,22 +1,21 @@
 import "./Sidebar.css";
-import { useContext, useEffect, useState, useCallback } from "react";
-import { MyContext } from "./MyContext.jsx";
+import { useState, useEffect, useCallback, memo } from "react";
+import { useAuth } from "./AuthContext";
+import { useChat } from "./ChatContext";
 import { v1 as uuidv1 } from "uuid";
 import axios from "axios";
 
 function Sidebar() {
+  const { token, setToken } = useAuth();
   const {
-    token,
-    setToken,
     allThreads,
     setAllThreads,
     currThreadId,
     setNewChat,
     setPrompt,
-    setReply,
     setCurrThreadId,
     setPrevChats,
-  } = useContext(MyContext);
+  } = useChat();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -25,38 +24,37 @@ function Sidebar() {
       setAllThreads([]);
       return;
     }
-
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/thread`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
-
       if (response.status === 200) {
         const filteredData = response.data.map((thread) => ({
           threadId: thread.threadId,
           title: thread.title,
         }));
-
         setAllThreads(filteredData);
       }
     } catch (err) {
       console.error("Failed to fetch threads:", err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setAllThreads([]);
+      }
     }
-  }, [token, setAllThreads]);
+  }, [token, setAllThreads, setToken]);
 
   useEffect(() => {
     getAllThreads();
-  }, [currThreadId, getAllThreads]);
+  }, [getAllThreads]);
 
   const createNewChat = () => {
     setNewChat(true);
     setPrompt("");
-    setReply(null);
     setCurrThreadId(uuidv1());
     setPrevChats([]);
     setIsMobileOpen(false);
@@ -65,63 +63,43 @@ function Sidebar() {
   const changeThread = async (newThreadId) => {
     setCurrThreadId(newThreadId);
     setIsMobileOpen(false);
-    const savedToken = localStorage.getItem("token");
-
-    if (!savedToken) return;
+    if (!token) return;
 
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/thread/${newThreadId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${savedToken}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-
       setPrevChats(response.data);
       setNewChat(false);
-      setReply(null);
     } catch (err) {
       console.error("Failed to change thread:", err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+      }
     }
   };
 
   const deleteThread = async (threadId) => {
-    const savedToken = localStorage.getItem("token");
-
-    if (!savedToken) return;
-
+    if (!token) return;
     try {
       await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/api/thread/${threadId}`,
         {
-          headers: {
-            Authorization: `Bearer ${savedToken}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
-
       setAllThreads((prev) =>
         prev.filter((thread) => thread.threadId !== threadId),
       );
       if (threadId === currThreadId) createNewChat();
     } catch (err) {
       console.error("Failed to delete thread:", err);
-    }
-  };
-
-  const handleOverlayKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setIsMobileOpen(false);
-    }
-  };
-
-  const handleToggleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setIsMobileOpen((prev) => !prev);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+      }
     }
   };
 
@@ -138,7 +116,6 @@ function Sidebar() {
         type="button"
         className="sidebar-toggle"
         onClick={() => setIsMobileOpen((prev) => !prev)}
-        onKeyDown={handleToggleKeyDown}
         aria-label="Toggle sidebar navigation panel"
       >
         <i className="fa-solid fa-bars" />
@@ -147,7 +124,6 @@ function Sidebar() {
       <div
         className={`sidebar-overlay ${isMobileOpen ? "open" : ""}`}
         onClick={() => setIsMobileOpen(false)}
-        onKeyDown={handleOverlayKeyDown}
         role="button"
         tabIndex={0}
         aria-label="Close sidebar menu overlay"
@@ -173,47 +149,30 @@ function Sidebar() {
         </button>
 
         <div className="sidebar-history history m-2.5 p-2.5 h-full overflow-y-auto">
-          {allThreads?.map((thread) => {
-            const handleThreadKeyDown = (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                changeThread(thread.threadId);
-              }
-            };
-            const handleDeleteKeyDown = (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                e.stopPropagation();
-                deleteThread(thread.threadId);
-              }
-            };
-            return (
-              <div
-                key={thread.threadId}
-                onClick={() => changeThread(thread.threadId)}
-                onKeyDown={handleThreadKeyDown}
-                role="button"
-                tabIndex={0}
-                aria-label={`Switch context window thread to ${thread.title}`}
-                className={`cursor-pointer py-2 px-3 mb-1.5 text-sm border border-transparent relative whitespace-nowrap overflow-hidden text-ellipsis flex items-center justify-between rounded-[10px] group transition-colors hover:bg-white/5
-                  ${thread.threadId === currThreadId ? "bg-white/5 text-white" : "text-white/60"}`}
+          {allThreads?.map((thread) => (
+            <div
+              key={thread.threadId}
+              onClick={() => changeThread(thread.threadId)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Switch context window thread to ${thread.title}`}
+              className={`cursor-pointer py-2 px-3 mb-1.5 text-sm border border-transparent relative whitespace-nowrap overflow-hidden text-ellipsis flex items-center justify-between rounded-[10px] group transition-colors hover:bg-white/5
+                ${thread.threadId === currThreadId ? "bg-white/5 text-white" : "text-white/60"}`}
+            >
+              <span className="truncate pr-4">{thread.title}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteThread(thread.threadId);
+                }}
+                aria-label={`Delete chat thread ${thread.title}`}
+                className="opacity-0 group-hover:opacity-100 bg-transparent border-none text-white/40 hover:text-white transition-opacity cursor-pointer p-1"
               >
-                <span className="truncate pr-4">{thread.title}</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteThread(thread.threadId);
-                  }}
-                  onKeyDown={handleDeleteKeyDown}
-                  aria-label={`Delete chat thread ${thread.title}`}
-                  className="opacity-0 group-hover:opacity-100 bg-transparent border-none text-white/40 hover:text-white transition-opacity cursor-pointer p-1"
-                >
-                  <i className="fa-solid fa-trash text-xs" />
-                </button>
-              </div>
-            );
-          })}
+                <i className="fa-solid fa-trash text-xs" />
+              </button>
+            </div>
+          ))}
         </div>
 
         <div className="p-2.5 m-2.5 text-sm text-center border-t border-white/5 text-white/30 select-none">
@@ -224,4 +183,4 @@ function Sidebar() {
   );
 }
 
-export default Sidebar;
+export default memo(Sidebar);

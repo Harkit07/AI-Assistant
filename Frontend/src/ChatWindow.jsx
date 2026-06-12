@@ -1,33 +1,29 @@
 import "./ChatWindow.css";
 import Chat from "./Chat.jsx";
-import { MyContext } from "./MyContext.jsx";
-import { useContext, useState, useEffect, useRef } from "react";
+import { useAuth } from "./AuthContext";
+import { useChat } from "./ChatContext";
+import { useState, useEffect, useRef, memo } from "react";
 import { ScaleLoader } from "react-spinners";
 import Login from "./Login.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 function ChatWindow() {
-  const {
-    token,
-    setToken,
-    prompt,
-    setPrompt,
-    reply,
-    setReply,
-    currThreadId,
-    setPrevChats,
-    setNewChat,
-  } = useContext(MyContext);
-
+  const { token, setToken } = useAuth();
+  const { prompt, setPrompt, currThreadId, setPrevChats, setNewChat, newChat } =
+    useChat();
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const currPromptRef = useRef("");
+  const isSendingRef = useRef(false);
 
+  // Load thread history – skip if this is a brand new chat or if we are currently sending a message
   useEffect(() => {
     const fetchThreadHistory = async () => {
       if (!currThreadId || !token) return;
+      // Don't fetch if it's a new chat or we're in the middle of sending a message
+      if (newChat || isSendingRef.current) return;
+
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/api/thread/${currThreadId}`,
@@ -39,16 +35,27 @@ function ChatWindow() {
         }
       } catch (err) {
         if (err.response?.status === 404) {
+          // Thread doesn't exist yet – that's fine, treat as new chat
           setPrevChats([]);
           setNewChat(true);
+          // Don't log as error to avoid console noise
+          console.info(
+            `Thread ${currThreadId} not found, treating as new chat.`,
+          );
+        } else if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          setToken(null);
+          toast.info("Session expired. Please login again.");
+          setShowLogin(true);
+        } else {
+          console.error("Failed to fetch thread history:", err);
         }
       }
     };
     fetchThreadHistory();
-  }, [currThreadId, token, setPrevChats, setNewChat]);
+  }, [currThreadId, token, setPrevChats, setNewChat, setToken, newChat]);
 
   const getReply = async () => {
-    currPromptRef.current = prompt;
     const currentToken = localStorage.getItem("token");
     if (!currentToken) {
       toast.info("Please login to start chatting!");
@@ -58,48 +65,48 @@ function ChatWindow() {
     if (loading || !prompt.trim()) return;
 
     setLoading(true);
-    setNewChat(false);
+    isSendingRef.current = true;
+    setNewChat(false); // first message -> this thread now has history
+
+    // Add user message immediately
+    setPrevChats((prev) => [...prev, { role: "user", content: prompt }]);
+    const userPrompt = prompt;
+    setPrompt("");
 
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/chat`,
-        { message: prompt, threadId: currThreadId },
+        { message: userPrompt, threadId: currThreadId },
         { headers: { Authorization: `Bearer ${currentToken}` } },
       );
       if (response.data?.reply) {
-        setReply(response.data.reply);
+        setPrevChats((prev) => [
+          ...prev,
+          { role: "assistant", content: response.data.reply },
+        ]);
       } else {
         toast.error("Failed to get reply");
-        setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      toast.error(
-        err.response?.data?.error || "Network error. Please try again.",
-      );
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        toast.info("Session expired. Please login again.");
+        setShowLogin(true);
+      } else {
+        toast.error(
+          err.response?.data?.error || "Network error. Please try again.",
+        );
+      }
+    } finally {
       setLoading(false);
+      // Delay resetting the sending flag to avoid immediate fetch
+      setTimeout(() => {
+        isSendingRef.current = false;
+      }, 500);
     }
   };
-
-  useEffect(() => {
-    if (currPromptRef.current && reply) {
-      setPrevChats((prev) => [
-        ...prev,
-        { role: "user", content: currPromptRef.current },
-        { role: "assistant", content: reply },
-      ]);
-      setPrompt("");
-      setReply(null);
-      setLoading(false);
-    }
-  }, [reply, setPrevChats, setPrompt, setReply]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = () => setIsOpen(false);
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isOpen]);
 
   const handleLogout = async () => {
     try {
@@ -118,21 +125,19 @@ function ChatWindow() {
     }
   };
 
-  const handleKeyDownToggle = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setIsOpen((prev) => !prev);
-    }
-  };
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = () => setIsOpen(false);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpen]);
 
   return (
     <div className="chatwindow-root flex flex-col justify-between items-center h-screen flex-1 w-full bg-[#212121] text-white relative">
-      {/* Top Navbar Header */}
       <div className="w-full flex justify-between items-center px-4 py-3 border-b border-white/5 bg-[#212121] relative z-40">
         <div className="text-sm font-medium text-white/40 font-sans tracking-wide ml-12 sm:ml-0">
           Model v1.0
         </div>
-
         <div className="relative">
           <div
             className="flex items-center justify-center h-8 w-8 rounded-full cursor-pointer overflow-hidden border border-white/10"
@@ -140,7 +145,6 @@ function ChatWindow() {
               e.stopPropagation();
               setIsOpen((prev) => !prev);
             }}
-            onKeyDown={handleKeyDownToggle}
             role="button"
             tabIndex={0}
             aria-label="Toggle user menu"
@@ -151,7 +155,6 @@ function ChatWindow() {
               className="w-full h-full object-cover"
             />
           </div>
-
           {isOpen && (
             <div className="absolute right-0 mt-2 w-40 rounded-xl shadow-2xl p-1.5 border border-white/5 bg-[#171717]">
               {token ? (
@@ -176,7 +179,7 @@ function ChatWindow() {
         </div>
       </div>
 
-      <Chat showLogin={showLogin} setShowLogin={setShowLogin} />
+      <Chat />
 
       <ScaleLoader color="#fff" loading={loading} />
 
@@ -202,7 +205,6 @@ function ChatWindow() {
             <i className="fa-solid fa-paper-plane" />
           </button>
         </div>
-
         <p className="text-[10px] md:text-xs py-2 px-4 text-center text-white/20 font-light select-none tracking-wide">
           AI can make mistakes. Consider checking important information.
         </p>
@@ -213,4 +215,4 @@ function ChatWindow() {
   );
 }
 
-export default ChatWindow;
+export default memo(ChatWindow);

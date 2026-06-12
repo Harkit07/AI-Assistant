@@ -1,7 +1,7 @@
-import { useState, useContext } from "react";
+import { useState, memo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { MyContext } from "./MyContext";
+import { useAuth } from "./AuthContext";
 
 const CloseIcon = () => (
   <svg
@@ -89,14 +89,9 @@ function InputField({
         aria-label={ariaLabel}
         className={`
           w-full rounded-xl px-4 text-sm font-light text-white outline-none
-          transition-all duration-200
-          py-3.5 md:py-3
+          transition-all duration-200 py-3.5 md:py-3
           ${children ? "pr-11" : ""}
-          ${
-            isFocused
-              ? "bg-white/[0.07] border border-white/25 shadow-[0_0_0_3px_rgba(255,255,255,0.04)]"
-              : "bg-white/4 border border-white/9"
-          }
+          ${isFocused ? "bg-white/[0.07] border border-white/25 shadow-[0_0_0_3px_rgba(255,255,255,0.04)]" : "bg-white/4 border border-white/9"}
         `}
         style={{ color: "#fff", caretColor: "#fff" }}
       />
@@ -109,8 +104,8 @@ function InputField({
   );
 }
 
-export default function Login({ onClose, visible, setVisible }) {
-  const { setUser, setToken } = useContext(MyContext);
+function Login({ visible, setVisible }) {
+  const { setUser, setToken } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -120,8 +115,10 @@ export default function Login({ onClose, visible, setVisible }) {
 
   const handleClose = () => {
     setVisible(false);
-    switchMode();
-    setTimeout(() => onClose?.(), 250);
+    setIsSignup(false);
+    setEmail("");
+    setPassword("");
+    setName("");
   };
 
   const handleLogin = async () => {
@@ -177,19 +174,9 @@ export default function Login({ onClose, visible, setVisible }) {
     setEmail("");
     setPassword("");
     setName("");
-    setFocusedField(null);
   };
 
   if (!visible) return null;
-
-  const handleOverlayKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      if (e.target === e.currentTarget) {
-        e.preventDefault();
-        handleClose();
-      }
-    }
-  };
 
   return (
     <>
@@ -205,14 +192,13 @@ export default function Login({ onClose, visible, setVisible }) {
         .close-spin:hover { transform: rotate(90deg); background: rgba(255,255,255,0.06); }
         .close-spin:active { transform: rotate(90deg) scale(0.92); }
         .glow-ring { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; border: 1px solid transparent; background: radial-gradient(circle at 50% -20%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 65%) border-box; }
-        .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.015; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3联%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
+        .grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.015; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
         .login-btn { transition: transform 0.15s ease, background-color 0.15s ease, opacity 0.15s ease; box-shadow: 0 4px 12px rgba(255,255,255,0.05); }
         .login-btn:hover { background-color: #f0f0f2; transform: translateY(-1px); }
         .login-btn:active { transform: translateY(0) scale(0.98); }
         .link-hover { transition: color 0.15s ease, opacity 0.15s ease; }
         .link-hover:hover { color: #fff !important; opacity: 0.9 !important; }
       `}</style>
-
       <div
         className="login-root overlay-anim fixed inset-0 flex items-center justify-center px-4 z-50"
         style={{
@@ -221,7 +207,6 @@ export default function Login({ onClose, visible, setVisible }) {
           WebkitBackdropFilter: "blur(8px)",
         }}
         onClick={(e) => e.target === e.currentTarget && handleClose()}
-        onKeyDown={handleOverlayKeyDown}
         role="button"
         tabIndex={0}
         aria-label="Close login modal overlay"
@@ -235,11 +220,9 @@ export default function Login({ onClose, visible, setVisible }) {
               "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset",
           }}
           onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
         >
           <div className="grain" />
           <div className="glow-ring" />
-
           <div className="relative z-10">
             <button
               type="button"
@@ -249,7 +232,6 @@ export default function Login({ onClose, visible, setVisible }) {
             >
               <CloseIcon />
             </button>
-
             <div className="text-center mb-7">
               <h2 className="login-title text-white text-[1.75rem] leading-tight mb-2.5">
                 {isSignup ? "Create an account" : "Log in or sign up"}
@@ -263,7 +245,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 files, images, and more.
               </p>
             </div>
-
             <div className="flex flex-col gap-2.5 mb-3">
               {isSignup && (
                 <InputField
@@ -277,7 +258,6 @@ export default function Login({ onClose, visible, setVisible }) {
                   ariaLabel="Full name"
                 />
               )}
-
               <InputField
                 type="email"
                 value={email}
@@ -288,7 +268,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 setFocusedField={setFocusedField}
                 ariaLabel="Email address"
               />
-
               <InputField
                 type={showPass ? "text" : "password"}
                 value={password}
@@ -310,7 +289,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 </button>
               </InputField>
             </div>
-
             {!isSignup && (
               <div className="flex justify-end mb-5">
                 <button
@@ -321,7 +299,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 </button>
               </div>
             )}
-
             <div className={isSignup ? "mt-5" : ""}>
               <button
                 type="button"
@@ -331,7 +308,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 {isSignup ? "Sign up" : "Continue"}
               </button>
             </div>
-
             <p
               className="text-center mt-4 text-[0.75rem] font-light"
               style={{ color: "rgba(255,255,255,0.3)" }}
@@ -346,7 +322,6 @@ export default function Login({ onClose, visible, setVisible }) {
                 {isSignup ? "Log in" : "Sign up"}
               </button>
             </p>
-
             <p
               className="text-center mt-4 text-[0.7rem] font-light leading-relaxed"
               style={{ color: "rgba(255,255,255,0.2)" }}
@@ -375,3 +350,5 @@ export default function Login({ onClose, visible, setVisible }) {
     </>
   );
 }
+
+export default memo(Login);
