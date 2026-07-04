@@ -70,23 +70,23 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 AI-Assistant/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                # GitHub Actions CI/CD workflow
-├── k8s/                              # Kubernetes manifests
+│       └── deploy.yml
+├── k8s/
 │   ├── backend-deployment.yaml
 │   ├── frontend-deployment.yaml
 │   ├── ingress.yaml
 │   └── secrets.yaml
-├── backend/
+├── Backend/
 │   ├── models/
-│   │   ├── user.js
-│   │   ├── thread.js
-│   │   └── blacklistToken.js
+│   │   ├── Thread.js
+│   │   ├── blacklistToken.js
+│   │   └── user.js
 │   ├── netlify/
 │   │   └── functions/
-│   │       └── server.js             # Netlify serverless entry point
+│   │       └── server.js
 │   ├── routes/
-│   │   ├── user.js
-│   │   └── chat.js
+│   │   ├── chat.js
+│   │   └── user.js
 │   ├── services/
 │   │   ├── validationResult.js
 │   │   └── user.js
@@ -95,27 +95,30 @@ AI-Assistant/
 │   ├── Dockerfile
 │   ├── package.json
 │   └── .env
-├── frontend/
+├── Frontend/
 │   ├── src/
-│   │   ├── AuthContext.jsx           # Authentication state (JWT, user)
-│   │   ├── ChatContext.jsx           # Chat state (prompt, threads, history)
-│   │   ├── UIContext.jsx             # UI state (mobile detection)
-│   │   ├── MyContext.jsx             # Compatibility layer (re-exports new contexts)
-│   │   ├── App.jsx                   # Root component with providers
-│   │   ├── Sidebar.jsx               # Thread list, new chat, delete thread
-│   │   ├── ChatWindow.jsx            # Main chat UI, input, message sending
-│   │   ├── Chat.jsx                  # Renders messages with Markdown
-│   │   ├── Login.jsx                 # Login/signup modal
-│   │   ├── main.jsx                  # Entry point
-│   │   ├── index.css                 # Tailwind imports
-│   │   ├── App.css                   # Global font styles
-│   │   ├── Chat.css                  # Markdown code block styling
-│   │   ├── ChatWindow.css            # Input & chat window styles
-│   │   └── Sidebar.css               # Sidebar hover & delete button styles
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── AuthContext.jsx
+│   │   ├── Chat.css
+│   │   ├── Chat.jsx
+│   │   ├── ChatContext.jsx
+│   │   ├── ChatWindow.css
+│   │   ├── ChatWindow.jsx
+│   │   ├── Login.jsx
+│   │   ├── Sidebar.css
+│   │   ├── Sidebar.jsx
+│   │   ├── UIContext.jsx
+│   │   ├── MyContext.jsx
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   └── assets/
 │   ├── index.html
 │   ├── Dockerfile
 │   ├── package.json
-│   └── .env
+│   ├── postcss.config.js
+│   ├── vite.config.js
+│   └── eslint.config.js
 ├── docker-compose.yml
 ├── .gitignore
 └── README.md
