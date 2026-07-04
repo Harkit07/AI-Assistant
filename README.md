@@ -1,5 +1,3 @@
-markdown
-
 # 🤖 AI Assistant — Full Stack ChatGPT Clone
 
 A production-ready full-stack AI chat application built with the MERN stack and OpenAI API. Supports multi-turn conversations, persistent chat history, per-user thread management, and a responsive UI with Markdown rendering — frontend deployed on Render, backend deployed on Netlify.
@@ -44,29 +42,29 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 
 ### Frontend
 
-| Technology        | Purpose                              |
-| ----------------- | ------------------------------------ |
-| React.js          | UI framework                         |
-| Tailwind CSS      | Utility-first styling                |
-| React Context API | Global state (auth, chats, sidebar)  |
-| React Markdown    | Rendering AI responses with Markdown |
-| Axios             | HTTP client for API requests         |
+| Technology         | Purpose                              |
+| ------------------ | ------------------------------------- |
+| React.js           | UI framework                          |
+| Tailwind CSS        | Utility-first styling                 |
+| React Context API   | Global state (auth, chats, sidebar)   |
+| React Markdown      | Rendering AI responses with Markdown  |
+| Axios               | HTTP client for API requests          |
 
 ### Backend
 
-| Technology             | Purpose                           |
-| ---------------------- | --------------------------------- |
-| Node.js + Express.js   | Web server & REST API             |
-| MongoDB + Mongoose ODM | Database & schema modeling        |
-| JWT (jsonwebtoken)     | Authentication & route protection |
-| Bcrypt                 | Password hashing                  |
-| OpenAI API             | AI chat completions               |
+| Technology              | Purpose                            |
+| ------------------------ | ----------------------------------- |
+| Node.js + Express.js     | Web server & REST API               |
+| MongoDB + Mongoose ODM   | Database & schema modeling          |
+| JWT (jsonwebtoken)       | Authentication & route protection   |
+| Bcrypt                   | Password hashing                    |
+| OpenAI API               | AI chat completions                 |
 
 ---
 
 ## 📁 Project Structure
 
-````
+```
 AI-Assistant/
 ├── .github/
 │   └── workflows/
@@ -122,6 +120,7 @@ AI-Assistant/
 ├── docker-compose.yml
 ├── .gitignore
 └── README.md
+```
 
 ---
 
@@ -151,10 +150,13 @@ touch .env
 
 # 4. Start the backend server
 node server.js
-Backend will be available at http://localhost:8080.
+```
 
-Frontend Setup
-bash
+Backend will be available at `http://localhost:8080`.
+
+### Frontend Setup
+
+```bash
 # 1. Navigate to the frontend directory
 cd Frontend
 
@@ -167,11 +169,17 @@ touch .env
 
 # 4. Start the development server
 npm run dev
-Frontend will be available at http://localhost:5173.
+```
 
-🔐 Environment Variables
-Backend .env
-env
+Frontend will be available at `http://localhost:5173`.
+
+---
+
+## 🔐 Environment Variables
+
+### Backend `.env`
+
+```env
 # MongoDB
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ai-assistant
 
@@ -184,40 +192,53 @@ OPENAI_API_KEY=sk-your_openai_api_key
 
 # Server
 PORT=8080
-Frontend .env
-env
+```
+
+### Frontend `.env`
+
+```env
 VITE_API_URL=https://your-netlify-site.netlify.app/api
-📡 API Routes
-Auth — /user
-Method	Route	Auth	Description
-POST	/user/signup	❌	Register a new user
-POST	/user/login	❌	Login and receive JWT
-GET	/user/profile	✅	Get user profile
-GET	/user/logout	✅	Logout a user
-Chat — /api
-Method	Route	Auth	Description
-GET	/api/thread	✅	Get all threads
-GET	/api/thread/:threadId	✅	Get a message in a thread
-DELETE	/api/thread/:threadId	✅	Delete a thread
-POST	/api/chat	✅	Send a message and receive AI response
-🚢 Deployment
+```
+
+---
+
+## 📡 API Routes
+
+### Auth — `/user`
+
+| Method | Route            | Auth | Description             |
+| ------ | ---------------- | ---- | ------------------------ |
+| POST   | `/user/signup`   | ❌   | Register a new user      |
+| POST   | `/user/login`    | ❌   | Login and receive JWT    |
+| GET    | `/user/profile`  | ✅   | Get user profile         |
+| GET    | `/user/logout`   | ✅   | Logout a user            |
+
+### Chat — `/api`
+
+| Method | Route                  | Auth | Description                        |
+| ------ | ---------------------- | ---- | ------------------------------------ |
+| GET    | `/api/thread`          | ✅   | Get all threads                     |
+| GET    | `/api/thread/:threadId`| ✅   | Get a message in a thread           |
+| DELETE | `/api/thread/:threadId`| ✅   | Delete a thread                     |
+| POST   | `/api/chat`            | ✅   | Send a message and receive AI response |
+
+---
+
+## 🚢 Deployment
+
 Frontend and backend are deployed independently — frontend on Render, backend on Netlify.
 
-Backend (Netlify — Serverless Functions)
+### Backend (Netlify — Serverless Functions)
 
-The Express app is wrapped with serverless-http to run as a Netlify Function
+- The Express app is wrapped with `serverless-http` to run as a Netlify Function
+- Build command: `npm install`
+- Functions directory: `netlify/functions`
+- Add all backend environment variables in the Netlify dashboard under **Site Settings → Environment Variables**
+- API base path: `/.netlify/functions/server/api/...`
 
-Build command: npm install
+**`netlify.toml`** (place in `Backend/` root):
 
-Functions directory: netlify/functions
-
-Add all backend environment variables in the Netlify dashboard under Site Settings → Environment Variables
-
-API base path: /.netlify/functions/server/api/...
-
-netlify.toml (place in Backend/ root):
-
-toml
+```toml
 [build]
   command = "npm install"
   functions = "netlify/functions"
@@ -226,27 +247,35 @@ toml
   from = "/api/*"
   to = "/.netlify/functions/server/:splat"
   status = 200
-netlify/functions/server.js — export handler alongside your existing code:
+```
 
-js
+**`netlify/functions/server.js`** — export handler alongside your existing code:
+
+```js
 const serverless = require("serverless-http");
 // ... existing Express app setup ...
 module.exports.handler = serverless(app);
-Frontend (Render — Static Site)
+```
 
-Build command: npm run build
+### Frontend (Render — Static Site)
 
-Publish directory: dist
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Set `VITE_API_URL` to your Netlify backend URL:
 
-Set VITE_API_URL to your Netlify backend URL:
-
-env
+```env
 VITE_API_URL=https://your-netlify-site.netlify.app/api
-🐳 Docker Support
+```
+
+---
+
+## 🐳 Docker Support
+
 The application is fully containerized using Docker, allowing consistent development and deployment across environments.
 
-Backend Dockerfile
-dockerfile
+### Backend Dockerfile
+
+```dockerfile
 FROM node:22-alpine
 
 WORKDIR /app
@@ -259,8 +288,11 @@ COPY . .
 EXPOSE 8080
 
 CMD ["node", "server.js"]
-Frontend Dockerfile
-dockerfile
+```
+
+### Frontend Dockerfile
+
+```dockerfile
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -279,22 +311,34 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
-Build Images
-bash
+```
+
+### Build Images
+
+```bash
 # Backend
 docker build -t ai-assistant-backend ./Backend
 
 # Frontend
 docker build -t ai-assistant-frontend ./Frontend
-Run Containers
-bash
+```
+
+### Run Containers
+
+```bash
 docker run -p 8080:8080 ai-assistant-backend
 docker run -p 5173:80 ai-assistant-frontend
-☸️ Kubernetes Deployment
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
 The application is deployed on Kubernetes using Deployments, Services, Secrets, and NGINX Ingress Controller.
 
-Kubernetes Architecture
-text
+### Kubernetes Architecture
+
+```
 Internet
     │
     ▼
@@ -310,54 +354,68 @@ Frontend Pods  Backend Pods
                    │
                    ▼
              MongoDB Atlas
-Components
-Deployments
-Frontend Deployment
+```
 
-Multiple replicas for high availability
+### Components
 
-Serves React production build through Nginx
+**Deployments**
 
-Backend Deployment
+- **Frontend Deployment**
+  - Multiple replicas for high availability
+  - Serves React production build through Nginx
+- **Backend Deployment**
+  - Multiple replicas for load balancing
+  - Connects to MongoDB Atlas and OpenAI API
 
-Multiple replicas for load balancing
+**Services**
 
-Connects to MongoDB Atlas and OpenAI API
-
-Services
-yaml
+```yaml
 frontend-service
 backend-service
+```
+
 Expose frontend and backend pods internally within the cluster.
 
-Secrets
+**Secrets**
+
 Sensitive credentials are stored securely using Kubernetes Secrets:
 
-yaml
+```yaml
 OPENAI_API_KEY
 MONGODB_URI
 JWT_SECRET
 NODE_ENV
 CLIENT_URL
+```
+
 Apply:
 
-bash
+```bash
 kubectl apply -f secrets.yaml
-Deploy Application
-bash
+```
+
+### Deploy Application
+
+```bash
 kubectl apply -f backend-deployment.yaml
 kubectl apply -f frontend-deployment.yaml
+```
+
 Verify:
 
-bash
+```bash
 kubectl get deployments
 kubectl get pods
 kubectl get services
-🌐 Ingress Configuration
+```
+
+### 🌐 Ingress Configuration
+
 NGINX Ingress Controller is used to expose frontend and backend through a single domain.
 
-Ingress Rules
-yaml
+**Ingress Rules**
+
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -391,35 +449,57 @@ spec:
                 name: frontend-service
                 port:
                   number: 80
+```
+
 Apply:
 
-bash
+```bash
 kubectl apply -f ingress.yaml
-Enable NGINX Ingress
-bash
+```
+
+**Enable NGINX Ingress**
+
+```bash
 minikube addons enable ingress
-Start Tunnel
-bash
+```
+
+**Start Tunnel**
+
+```bash
 minikube tunnel
-Configure Local Host
+```
+
+**Configure Local Host**
+
 Add the following entry to your hosts file:
 
-text
+```
 127.0.0.1 ai-assistant.local
-Access Application
-text
+```
+
+**Access Application**
+
+```
 http://ai-assistant.local
+```
+
 Requests are automatically routed:
 
-text
+```
 /          → Frontend Service
 /user/*    → Backend Service
 /api/*     → Backend Service
-⚙️ CI/CD Workflow
-The project uses GitHub Actions to automatically build and push Docker images on every push to the main branch.
+```
 
-Workflow File: .github/workflows/deploy.yml
-yaml
+---
+
+## ⚙️ CI/CD Workflow
+
+The project uses GitHub Actions to automatically build and push Docker images on every push to the `main` branch.
+
+**Workflow File:** `.github/workflows/deploy.yml`
+
+```yaml
 name: AI Assistant CI/CD
 
 on:
@@ -456,53 +536,45 @@ jobs:
           context: ./Frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
-How It Works
-On every git push to the main branch, the workflow is triggered.
+```
 
-The code is checked out.
+**How It Works**
 
-Docker Hub login is performed using secrets (DOCKER_USERNAME, DOCKER_PASSWORD) stored in GitHub repository settings.
+1. On every `git push` to the `main` branch, the workflow is triggered.
+2. The code is checked out.
+3. Docker Hub login is performed using secrets (`DOCKER_USERNAME`, `DOCKER_PASSWORD`) stored in GitHub repository settings.
+4. Docker Buildx is set up for multi-platform builds.
+5. Backend Docker image is built from `./Backend` and pushed to Docker Hub as `<your-dockerhub>/ai-assistant-backend:latest`.
+6. Frontend Docker image is built from `./Frontend` and pushed to Docker Hub as `<your-dockerhub>/ai-assistant-frontend:latest`.
 
-Docker Buildx is set up for multi-platform builds.
+> **Note:** The workflow currently only builds and pushes images. For automatic deployment to Kubernetes, you can extend it by adding a step that uses `kubectl` to apply updated manifests (e.g., with image pull policy `Always` or by updating the tag).
 
-Backend Docker image is built from ./Backend and pushed to Docker Hub as <your-dockerhub>/ai-assistant-backend:latest.
+---
 
-Frontend Docker image is built from ./Frontend and pushed to Docker Hub as <your-dockerhub>/ai-assistant-frontend:latest.
+## 📈 Scalability & Production Features
 
-Note: The workflow currently only builds and pushes images. For automatic deployment to Kubernetes, you can extend it by adding a step that uses kubectl to apply updated manifests (e.g., with image pull policy Always or by updating the tag).
+- Dockerized Microservice Architecture
+- Kubernetes Orchestration
+- Horizontal Scaling with Replicas
+- Secure Secret Management
+- NGINX Ingress Load Balancing
+- MongoDB Atlas Cloud Database
+- OpenAI API Integration
+- Environment-Based Configuration
+- Production-Ready Deployment Pipeline
+- Rolling Updates with Zero Downtime
 
-📈 Scalability & Production Features
-Dockerized Microservice Architecture
+---
 
-Kubernetes Orchestration
+## 👨‍💻 Author
 
-Horizontal Scaling with Replicas
+**Harkit Singh**
 
-Secure Secret Management
+- 📧 harkitsinghsran9584@gmail.com
+- 📞 +91-8890436710
+- 🌐 Portfolio
+- 🐙 [github.com/Harkit07](https://github.com/Harkit07)
 
-NGINX Ingress Load Balancing
+## 📝 License
 
-MongoDB Atlas Cloud Database
-
-OpenAI API Integration
-
-Environment-Based Configuration
-
-Production-Ready Deployment Pipeline
-
-Rolling Updates with Zero Downtime
-
-👨‍💻 Author
-Harkit Singh
-
-📧 harkitsinghsran9584@gmail.com
-
-📞 +91-8890436710
-
-🌐 Portfolio
-
-🐙 github.com/Harkit07
-
-📝 License
 This project is open source and free to use.
-````
