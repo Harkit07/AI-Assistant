@@ -83,7 +83,7 @@ AI-Assistant/
 │   │   └── user.js
 │   ├── netlify/
 │   │   └── functions/
-│   │       └── server.js
+│   │       └── server.js             # Netlify serverless entry point
 │   ├── routes/
 │   │   ├── chat.js
 │   │   └── user.js
