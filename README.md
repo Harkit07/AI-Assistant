@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./Frontend/public/Img.png" alt="AI Assistant Logo" width="200"/>
+</p>
+
 # 🤖 AI Assistant — Full Stack ChatGPT Clone
 
 A production-ready full-stack AI chat application built with the MERN stack and OpenAI API. Supports multi-turn conversations, persistent chat history, per-user thread management, and a responsive UI with Markdown rendering — frontend deployed on Render, backend deployed on Netlify.
@@ -42,29 +46,29 @@ A production-ready full-stack AI chat application built with the MERN stack and 
 
 ### Frontend
 
-| Technology         | Purpose                              |
-| ------------------ | ------------------------------------- |
-| React.js           | UI framework                          |
-| Tailwind CSS        | Utility-first styling                 |
-| React Context API   | Global state (auth, chats, sidebar)   |
-| React Markdown      | Rendering AI responses with Markdown  |
-| Axios               | HTTP client for API requests          |
+| Technology        | Purpose                              |
+| ----------------- | ------------------------------------ |
+| React.js          | UI framework                         |
+| Tailwind CSS      | Utility-first styling                |
+| React Context API | Global state (auth, chats, sidebar)  |
+| React Markdown    | Rendering AI responses with Markdown |
+| Axios             | HTTP client for API requests         |
 
 ### Backend
 
-| Technology              | Purpose                            |
-| ------------------------ | ----------------------------------- |
-| Node.js + Express.js     | Web server & REST API               |
-| MongoDB + Mongoose ODM   | Database & schema modeling          |
-| JWT (jsonwebtoken)       | Authentication & route protection   |
-| Bcrypt                   | Password hashing                    |
-| OpenAI API               | AI chat completions                 |
+| Technology             | Purpose                           |
+| ---------------------- | --------------------------------- |
+| Node.js + Express.js   | Web server & REST API             |
+| MongoDB + Mongoose ODM | Database & schema modeling        |
+| JWT (jsonwebtoken)     | Authentication & route protection |
+| Bcrypt                 | Password hashing                  |
+| OpenAI API             | AI chat completions               |
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 AI-Assistant/
 ├── .github/
 │   └── workflows/
@@ -94,6 +98,8 @@ AI-Assistant/
 │   ├── package.json
 │   └── .env
 ├── Frontend/
+│   ├── public/
+│   │   └── Img.png                   # Logo
 │   ├── src/
 │   │   ├── App.css
 │   │   ├── App.jsx
@@ -206,21 +212,21 @@ VITE_API_URL=https://your-netlify-site.netlify.app/api
 
 ### Auth — `/user`
 
-| Method | Route            | Auth | Description             |
-| ------ | ---------------- | ---- | ------------------------ |
-| POST   | `/user/signup`   | ❌   | Register a new user      |
-| POST   | `/user/login`    | ❌   | Login and receive JWT    |
-| GET    | `/user/profile`  | ✅   | Get user profile         |
-| GET    | `/user/logout`   | ✅   | Logout a user            |
+| Method | Route           | Auth | Description           |
+| ------ | --------------- | ---- | --------------------- |
+| POST   | `/user/signup`  | ❌   | Register a new user   |
+| POST   | `/user/login`   | ❌   | Login and receive JWT |
+| GET    | `/user/profile` | ✅   | Get user profile      |
+| GET    | `/user/logout`  | ✅   | Logout a user         |
 
 ### Chat — `/api`
 
-| Method | Route                  | Auth | Description                        |
-| ------ | ---------------------- | ---- | ------------------------------------ |
-| GET    | `/api/thread`          | ✅   | Get all threads                     |
-| GET    | `/api/thread/:threadId`| ✅   | Get a message in a thread           |
-| DELETE | `/api/thread/:threadId`| ✅   | Delete a thread                     |
-| POST   | `/api/chat`            | ✅   | Send a message and receive AI response |
+| Method | Route                   | Auth | Description                            |
+| ------ | ----------------------- | ---- | -------------------------------------- |
+| GET    | `/api/thread`           | ✅   | Get all threads                        |
+| GET    | `/api/thread/:threadId` | ✅   | Get a message in a thread              |
+| DELETE | `/api/thread/:threadId` | ✅   | Delete a thread                        |
+| POST   | `/api/chat`             | ✅   | Send a message and receive AI response |
 
 ---
 
@@ -338,7 +344,7 @@ The application is deployed on Kubernetes using Deployments, Services, Secrets, 
 
 ### Kubernetes Architecture
 
-```
+```text
 Internet
     │
     ▼
@@ -574,6 +580,7 @@ jobs:
 - 📞 +91-8890436710
 - 🌐 Portfolio
 - 🐙 [github.com/Harkit07](https://github.com/Harkit07)
+- 🔗 [Live Demo](https://ai-assistant-nsg8.onrender.com/)
 
 ## 📝 License
 
