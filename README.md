@@ -501,59 +501,31 @@ Requests are automatically routed:
 
 ## ⚙️ CI/CD Workflow
 
-The project uses GitHub Actions to automatically build and push Docker images on every push to the `main` branch.
+The GitHub Actions workflow in `.github/workflows/deploy.yml` builds and pushes both Docker images to Docker Hub whenever changes are pushed to `main`. After both image pushes succeed, it applies the Kubernetes manifests and restarts the deployments.
 
-**Workflow File:** `.github/workflows/deploy.yml`
+### Configure Docker Hub
 
-```yaml
-name: AI Assistant CI/CD
+1. Create Docker Hub repositories named `ai-assistant-backend` and `ai-assistant-frontend`.
+2. Create a Docker Hub access token.
+3. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add:
+   - `DOCKER_USERNAME`: your Docker Hub username.
+   - `DOCKER_PASSWORD`: your Docker Hub access token.
 
-on:
-  push:
-    branches:
-      - main
+The workflow publishes `latest` tags to `<your-dockerhub-username>/ai-assistant-backend` and `<your-dockerhub-username>/ai-assistant-frontend`.
 
-jobs:
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+### Push changes and check the workflow
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+Commit and push your changes to the GitHub `main` branch to start the workflow. The workflow pushes the resulting images to Docker Hub:
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push Backend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Backend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-backend:latest
-
-      - name: Build and push Frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Frontend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+```bash
+git add <path-to-your-changes>
+git commit -m "Describe your changes"
+git push origin main
 ```
 
-**How It Works**
+Open the repository's **Actions** tab to follow the run. The Docker job builds and pushes the backend and frontend images. The deploy job then applies the Kubernetes manifests and waits for both rollouts.
 
-1. On every `git push` to the `main` branch, the workflow is triggered.
-2. The code is checked out.
-3. Docker Hub login is performed using secrets (`DOCKER_USERNAME`, `DOCKER_PASSWORD`) stored in GitHub repository settings.
-4. Docker Buildx is set up for multi-platform builds.
-5. Backend Docker image is built from `./Backend` and pushed to Docker Hub as `<your-dockerhub>/ai-assistant-backend:latest`.
-6. Frontend Docker image is built from `./Frontend` and pushed to Docker Hub as `<your-dockerhub>/ai-assistant-frontend:latest`.
-
-> **Note:** The workflow currently only builds and pushes images. For automatic deployment to Kubernetes, you can extend it by adding a step that uses `kubectl` to apply updated manifests (e.g., with image pull policy `Always` or by updating the tag).
+The deploy job requires an online GitHub Actions self-hosted runner with `kubectl` configured to access the intended Kubernetes cluster. If no matching runner is available, Docker image publishing can succeed while deployment remains queued. Kubernetes application secrets must already exist in the cluster; they are not stored in GitHub Actions.
 
 ---
 
