@@ -4,7 +4,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # - MONGODB_URI=mongodb+srv://AI-Assistant:NEW_PASSWORD@ai-assistant.wqpwoge.mongodb.net/?appName=AI-Assistant
+      # - MONGODB_URI=mongodb+srv://AI-Assistant:NEW_PASSWORD@ai-assistant.wqpwoge.mongodb.net/?appName=AI-Assistant 
       - OPENAI_API_KEY=your_new_nvidia_key
       - MONGO_URI=mongodb://mongo:27017/ChatGPT
       # - MONGO_URL=mongodb://mongo:27017/ChatGPT
