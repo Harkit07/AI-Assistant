@@ -510,8 +510,11 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds and pushes 
 3. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add:
    - `DOCKER_USERNAME`: your Docker Hub username.
    - `DOCKER_PASSWORD`: your Docker Hub access token.
+   - `KUBE_CONFIG`: the raw contents of a kubeconfig for the target cluster.
 
 The workflow publishes `latest` tags to `<your-dockerhub-username>/ai-assistant-backend` and `<your-dockerhub-username>/ai-assistant-frontend`.
+
+The target Kubernetes API must be reachable from GitHub-hosted runners, and the kubeconfig identity must have permission to apply the manifests and restart/check the `backend` and `frontend` deployments. Keep application secrets (such as database and API keys) in the cluster, not in GitHub Actions.
 
 ### Push changes and check the workflow
 
@@ -523,9 +526,7 @@ git commit -m "Describe your changes"
 git push origin main
 ```
 
-Open the repository's **Actions** tab to follow the run. The Docker job builds and pushes the backend and frontend images. The deploy job then applies the Kubernetes manifests and waits for both rollouts.
-
-The deploy job requires an online GitHub Actions self-hosted runner with `kubectl` configured to access the intended Kubernetes cluster. If no matching runner is available, Docker image publishing can succeed while deployment remains queued. Kubernetes application secrets must already exist in the cluster; they are not stored in GitHub Actions.
+Open the repository's **Actions** tab to follow the run. The Docker job builds and pushes the backend and frontend images. The deploy job runs on GitHub-hosted Ubuntu, configures `kubectl` from `KUBE_CONFIG`, applies the Kubernetes manifests, and waits for both rollouts.
 
 ---
 

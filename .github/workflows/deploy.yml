@@ -39,10 +39,26 @@ jobs:
 
   deploy:
     needs: docker
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: ${{ runner.temp }}/kubeconfig
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure Kubernetes access
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "::error::Add the KUBE_CONFIG secret in the repository Actions settings."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$KUBE_CONFIG" > "$KUBECONFIG"
 
       - name: Apply manifests
         run: |
