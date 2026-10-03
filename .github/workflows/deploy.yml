@@ -1,6 +1,7 @@
 name: AI Assistant CI/CD
 
 on:
+  workflow_dispatch: # lets you run it manually from the Actions tab
   push:
     branches:
       - main
@@ -34,12 +35,21 @@ jobs:
           context: ./Frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/ai-assistant-frontend:latest
+
   deploy:
     needs: docker
-    runs-on: self-hosted # must run on a machine where `kubectl get nodes` works
+    runs-on: self-hosted # your PC, where `kubectl get nodes` works
+    defaults:
+      run:
+        shell: bash # Windows runners default to PowerShell; needs Git for Windows
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Select minikube cluster
+        run: |
+          kubectl config use-context minikube
+          kubectl get nodes
 
       # app-secrets already exists in the cluster (created once by hand),
       # so no app secrets are needed in GitHub.
