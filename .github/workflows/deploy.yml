@@ -40,8 +40,6 @@ jobs:
   deploy:
     needs: docker
     runs-on: ubuntu-latest
-    env:
-      KUBECONFIG: ${{ runner.temp }}/kubeconfig
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -58,7 +56,8 @@ jobs:
             exit 1
           fi
           umask 077
-          printf '%s' "$KUBE_CONFIG" > "$KUBECONFIG"
+          printf '%s' "$KUBE_CONFIG" > "$RUNNER_TEMP/kubeconfig"
+          echo "KUBECONFIG=$RUNNER_TEMP/kubeconfig" >> "$GITHUB_ENV"
 
       - name: Apply manifests
         run: |
