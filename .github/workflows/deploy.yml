@@ -1,7 +1,8 @@
 name: AI Assistant CI/CD
 
 on:
-  workflow_dispatch: # lets you run it manually from the Actions tab
+  # Run manually from Actions, or automatically after a push to main.
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -16,6 +17,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
+          # Add these as repository Actions secrets before running the workflow.
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
@@ -38,21 +40,21 @@ jobs:
 
   deploy:
     needs: docker
-    runs-on: self-hosted # your PC, where `kubectl get nodes` works
+    # The self-hosted runner must have access to the target Kubernetes cluster.
+    runs-on: self-hosted
     defaults:
       run:
-        shell: bash # Windows runners default to PowerShell; needs Git for Windows
+        shell: bash
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Select minikube cluster
         run: |
+          # Confirm the runner can access the intended cluster before deploying.
           kubectl config use-context minikube
           kubectl get nodes
 
-      # app-secrets already exists in the cluster (created once by hand),
-      # so no app secrets are needed in GitHub.
       - name: Apply manifests
         run: |
           kubectl apply -f k8s/backend-deployment.yaml \
