@@ -190,19 +190,19 @@ The frontend is served on:
 
 | Method | Route | Auth | Description |
 | --- | --- | --- | --- |
-| POST | `/user/signup` | No | Register a new user |
-| POST | `/user/login` | No | Log in and receive a JWT |
-| GET | `/user/profile` | Yes | Fetch the authenticated user |
-| GET | `/user/logout` | Yes | Log out and clear the token |
+| POST | `/user/signup` | ❌ | Register a new user |
+| POST | `/user/login` | ❌ | Log in and receive a JWT |
+| GET | `/user/profile` | ✅ | Fetch the authenticated user |
+| GET | `/user/logout` | ✅ | Log out and clear the token |
 
 ### Chat Routes (`/api`)
 
 | Method | Route | Auth | Description |
 | --- | --- | --- | --- |
-| GET | `/api/thread` | Yes | Fetch all user threads |
-| GET | `/api/thread/:threadId` | Yes | Fetch messages in a thread |
-| DELETE | `/api/thread/:threadId` | Yes | Delete a thread |
-| POST | `/api/chat` | Yes | Send a user message and receive an AI reply |
+| GET | `/api/thread` | ✅ | Fetch all user threads |
+| GET | `/api/thread/:threadId` | ✅ | Fetch messages in a thread |
+| DELETE | `/api/thread/:threadId` | ✅ | Delete a thread |
+| POST | `/api/chat` | ✅ | Send a user message and receive an AI reply |
 
 ## Docker
 
