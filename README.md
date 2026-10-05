@@ -55,6 +55,7 @@ AI-Assistant/
 │   └── workflows/
 │       └── deploy.yml
 ├── Backend/
+│   ├── .env.example
 │   ├── models/
 │   │   ├── Thread.js
 │   │   ├── blacklistToken.js
@@ -76,6 +77,7 @@ AI-Assistant/
 │   ├── netlify.toml
 │   └── package.json
 ├── Frontend/
+│   ├── .env.example
 │   ├── public/
 │   │   ├── Img.png
 │   │   └── Logo.png
@@ -132,11 +134,11 @@ Before running the project locally, make sure you have:
 
 ### Backend
 
-Create a `.env` file inside `Backend/`:
+Copy `Backend/.env.example` to `Backend/.env` and update the values for your setup:
 
 ```env
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ai-assistant
-JWT_SECRET=your-super-secret-key
+JWT_SECRET=change-me-to-a-long-random-secret
 OPENAI_API_KEY=your-ai-api-key
 CLIENT_URL=http://localhost:5173
 NODE_ENV=development
@@ -151,7 +153,7 @@ Notes:
 
 ### Frontend
 
-Create a `.env` file inside `Frontend/`:
+Copy `Frontend/.env.example` to `Frontend/.env` before running the app:
 
 ```env
 VITE_BASE_URL=http://localhost:8080
