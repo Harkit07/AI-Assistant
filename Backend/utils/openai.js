@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const getOpenAIAPIResponse = async (message) => {
+const getOpenAIAPIResponse = async (messages) => {
   const options = {
     method: "POST",
     headers: {
@@ -9,7 +9,7 @@ const getOpenAIAPIResponse = async (message) => {
     },
     body: JSON.stringify({
       model: "openai/gpt-oss-20b",
-      messages: [{ role: "user", content: message }],
+      messages,
       temperature: 1,
       top_p: 1,
       max_tokens: 4096,

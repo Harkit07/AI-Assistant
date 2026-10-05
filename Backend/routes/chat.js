@@ -5,32 +5,6 @@ import { authUser } from "../middleware.js";
 
 const router = express.Router();
 
-//test
-router.post("/test", async (req, res) => {
-  try {
-    const thread = new Thread({
-      threadId: "abc",
-      title: "Testing New Thread2",
-    });
-
-    const response = await thread.save();
-    res.send(response);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Failed to save in DB" });
-  }
-});
-
-router.get("/checkserver", async (req, res) => {
-  try {
-    const response = await Thread.find({});
-    res.send(response);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: "Failed to save in DB" });
-  }
-});
-
 //Get all threads
 router.get("/thread", authUser, async (req, res) => {
   try {
@@ -103,7 +77,10 @@ router.post("/chat", authUser, async (req, res) => {
       thread.messages.push({ role: "user", content: message });
     }
 
-    const assistantReply = await getOpenAIAPIResponse(message);
+    const history = thread.messages
+      .slice(-20)
+      .map((m) => ({ role: m.role, content: m.content }));
+    const assistantReply = await getOpenAIAPIResponse(history);
 
     if (!assistantReply) {
       return res.status(500).json({ error: "Empty reply from AI" });

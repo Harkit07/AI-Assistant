@@ -112,6 +112,7 @@ AI-Assistant/
 - Signup/login flow with validation
 - Chat history stored per user and per thread
 - Conversation thread creation, listing, and deletion
+- The last 20 messages in a thread are sent as context for each AI reply
 - AI reply generation through a backend inference service
 - Markdown output rendering in the frontend
 - Responsive layout for desktop and mobile screens
