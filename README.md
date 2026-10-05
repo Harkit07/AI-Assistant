@@ -147,7 +147,7 @@ Notes:
 
 - The backend calls `mongoose.connect(process.env.MONGODB_URI)`, so `MONGODB_URI` is required.
 - `CLIENT_URL` is used in CORS allowlist.
-- `OPENAI_API_KEY` is used by the AI service layer.
+- `OPENAI_API_KEY` must contain a valid NVIDIA API key for the configured inference endpoint.
 
 ### Frontend
 
@@ -241,6 +241,7 @@ The GitHub Actions workflow located at `.github/workflows/deploy.yml` builds Doc
 ## Notes
 
 - The backend uses `serverless-http` and includes a Netlify setup in `Backend/netlify.toml`.
+- For Netlify deployments, configure `MONGODB_URI`, `JWT_SECRET`, `OPENAI_API_KEY`, and `CLIENT_URL` as site environment variables, then redeploy the site.
 - The frontend is configured with `VITE_BASE_URL`, not `VITE_API_URL`.
 - Production usage may require secure environment variables and a real MongoDB + AI provider setup.
 
