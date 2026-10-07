@@ -33,11 +33,15 @@ function Chat() {
             ) : (
               <div
                 className={`text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm ${
-                  chat.streaming ? "typing-message" : ""
+                  chat.streaming && chat.content ? "typing-message" : ""
                 }`}
               >
                 {chat.streaming && !chat.content ? (
-                  <span className="typing-indicator" role="status" aria-label="Assistant is thinking">
+                  <span
+                    className="typing-indicator"
+                    role="status"
+                    aria-label="Assistant is thinking"
+                  >
                     <span>Thinking</span>
                     <span className="typing-bars" aria-hidden="true">
                       <span />

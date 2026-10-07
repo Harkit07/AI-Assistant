@@ -74,10 +74,6 @@ function ChatWindow() {
       throw new Error("The server returned an empty response stream.");
     }
 
-    setPrevChats((prev) => [
-      ...prev,
-      { role: "assistant", content: "", streaming: true },
-    ]);
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -165,7 +161,11 @@ function ChatWindow() {
     setNewChat(false); // first message -> this thread now has history
 
     // Add user message immediately
-    setPrevChats((prev) => [...prev, { role: "user", content: prompt }]);
+    setPrevChats((prev) => [
+      ...prev,
+      { role: "user", content: prompt },
+      { role: "assistant", content: "", streaming: true },
+    ]);
     const userPrompt = prompt;
     setPrompt("");
 
@@ -184,6 +184,13 @@ function ChatWindow() {
         toast.error("Failed to get reply");
       }
     } catch (err) {
+      setPrevChats((prev) => {
+        const lastChat = prev[prev.length - 1];
+        if (lastChat?.role !== "assistant" || !lastChat.streaming || lastChat.content) {
+          return prev;
+        }
+        return prev.slice(0, -1);
+      });
       console.error(err);
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
