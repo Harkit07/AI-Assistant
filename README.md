@@ -20,14 +20,19 @@ This project is split into two independent apps:
 
 The backend AI integration has been updated to handle both streaming and non-streaming responses from the NVIDIA OpenAI-compatible endpoint and to validate the required API key before making requests.
 
-The targeted backend tests now pass:
+The AI utility test currently has stale request-body expectations and should
+not be considered passing until it is updated. The test expects
+`temperature: 1` and `max_tokens: 1500`, while the implementation sends
+`temperature: 0.6` and `max_tokens: 800`. The streaming and JSON fallback
+behavior is covered, but the stale assertions cause the streaming test to fail.
 
 ```bash
 cd Backend
 node --test utils/openai.test.js
 ```
 
-This means the core AI utility is working for local development and validation flows. However, production deployment still requires environment hardening, security review, and live deployment validation before being treated as fully production-ready.
+Production deployment still requires environment hardening, security review,
+and live deployment validation before being treated as fully production-ready.
 
 The app supports:
 
@@ -55,12 +60,16 @@ The app supports:
 ### Backend
 
 - Node.js
-- Express 5
+- Express 4 (`^4.21.2`)
 - MongoDB + Mongoose
 - JWT authentication
 - bcrypt password hashing
 - OpenAI-compatible NVIDIA inference endpoint
 - serverless-http for Netlify compatibility
+
+The backend intentionally uses Express 4. Its `app.options("*", ...)` route
+pattern is compatible with Express 4; do not upgrade to Express 5 without
+updating that route pattern and verifying the server startup.
 
 ## Repository Structure
 
@@ -243,6 +252,11 @@ Run the backend inference request and streaming parser tests with:
 cd Backend
 node --test utils/openai.test.js
 ```
+
+**Known issue:** the streaming test currently expects `temperature: 1` and
+`max_tokens: 1500`, but `Backend/utils/openai.js` sends `temperature: 0.6` and
+`max_tokens: 800`. The test is stale and fails on that request-body assertion;
+update its expected values before treating this test command as passing.
 
 ## Docker
 
