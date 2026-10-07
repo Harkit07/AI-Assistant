@@ -80,19 +80,43 @@ router.post("/chat", authUser, async (req, res) => {
     const history = thread.messages
       .slice(-20)
       .map((m) => ({ role: m.role, content: m.content }));
-    const assistantReply = await getOpenAIAPIResponse(history);
+    res.set({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+    res.flushHeaders();
+
+    const sendEvent = (event) => {
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    };
+    const assistantReply = await getOpenAIAPIResponse(history, (token) => {
+      sendEvent({ token });
+    });
 
     if (!assistantReply) {
-      return res.status(500).json({ error: "Empty reply from AI" });
+      sendEvent({ error: "Empty reply from AI" });
+      return res.end();
     }
 
     thread.messages.push({ role: "assistant", content: assistantReply });
     thread.updatedAt = new Date();
 
     await thread.save();
-    res.json({ reply: assistantReply });
+    sendEvent({ done: true });
+    return res.end();
   } catch (err) {
-    console.log(err);
+    console.error("Chat completion failed:", err);
+    if (res.headersSent) {
+      res.write(
+        `data: ${JSON.stringify({
+          error: err.message || "Chat completion failed",
+          code: err.code || "PROVIDER_ERROR",
+        })}\n\n`,
+      );
+      return res.end();
+    }
     return res.status(500).json({ error: "something went wrong" });
   }
 });

@@ -5,3 +5,59 @@
 pre {
   white-space: pre-wrap;
 }
+
+.chat-transcript {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chat-transcript::-webkit-scrollbar {
+  display: none;
+}
+
+.typing-message::after {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.15em;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: typing-cursor 0.8s steps(2, start) infinite;
+}
+
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.5rem;
+}
+
+.typing-dots span {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: typing-dot 1s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-cursor {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes typing-dot {
+  50% {
+    opacity: 0.3;
+    transform: translateY(-0.2rem);
+  }
+}

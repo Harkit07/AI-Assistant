@@ -1,19 +1,32 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 
-const getOpenAIAPIResponse = async (messages) => {
+const getOpenAIAPIResponse = async (messages, onToken) => {
+  const requestMessages = [
+    {
+      role: "system",
+      content:
+        "Reply in English by default. Reply in Hindi only when the user explicitly asks for Hindi. Do not use other languages. Keep programming code and identifiers unchanged, and explain them in English.",
+    },
+    ...messages,
+  ];
+
   const options = {
     method: "POST",
     headers: {
+      Accept: "text/event-stream",
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
       model: "openai/gpt-oss-20b",
-      messages,
+      messages: requestMessages,
       temperature: 1,
       top_p: 1,
-      max_tokens: 4096,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      max_tokens: 1500,
       stream: true,
+      reasoning_effort: "low",
     }),
   };
 
@@ -23,13 +36,27 @@ const getOpenAIAPIResponse = async (messages) => {
     }
 
     const response = await fetch(
-      "https://integrate.api.nvidia.com/v1/chat/completions", // ✅ fixed URL
+      "https://integrate.api.nvidia.com/v1/chat/completions",
       options,
     );
 
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`API error: ${response.status} - ${errText}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("text/event-stream")) {
+      const json = await response.json();
+      const content = json.choices?.[0]?.message?.content;
+
+      if (typeof content !== "string" || !content.trim()) {
+        throw new Error("AI provider returned an empty response");
+      }
+
+      onToken?.(content);
+      return content;
     }
 
     if (!response.body) {
@@ -48,10 +75,11 @@ const getOpenAIAPIResponse = async (messages) => {
       const data = trimmed.slice(5).trim();
       if (!data || data === "[DONE]") return;
 
-      const json = JSON.parse(data);
-      const content = json.choices?.[0]?.delta?.content;
-      if (typeof content === "string") {
-        fullContent += content;
+      const event = JSON.parse(data);
+      const token = event.choices?.[0]?.delta?.content;
+      if (typeof token === "string") {
+        fullContent += token;
+        onToken?.(token);
       }
     };
 
@@ -64,16 +92,12 @@ const getOpenAIAPIResponse = async (messages) => {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        appendLine(line);
-      }
+      buffer = lines.pop() || "";
+      lines.forEach(appendLine);
     }
 
-    if (buffer) {
-      appendLine(buffer);
-    }
+    if (buffer) appendLine(buffer);
+    if (!fullContent) throw new Error("AI provider returned an empty response");
 
     return fullContent;
   } catch (err) {

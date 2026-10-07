@@ -3,7 +3,6 @@ import Chat from "./Chat.jsx";
 import { useAuth } from "./AuthContext";
 import { useChat } from "./ChatContext";
 import { useState, useEffect, useRef, memo } from "react";
-import { ScaleLoader } from "react-spinners";
 import Login from "./Login.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -55,6 +54,103 @@ function ChatWindow() {
     fetchThreadHistory();
   }, [currThreadId, token, setPrevChats, setNewChat, setToken, newChat]);
 
+  const streamChatReply = async (url, payload, config) => {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...config.headers,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      const error = new Error(data.error || "Network error. Please try again.");
+      error.response = { status: response.status, data };
+      throw error;
+    }
+    if (!response.body) {
+      throw new Error("The server returned an empty response stream.");
+    }
+
+    setPrevChats((prev) => [
+      ...prev,
+      { role: "assistant", content: "", streaming: true },
+    ]);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let assistantReply = "";
+    let completed = false;
+
+    const finishMessage = () => {
+      setPrevChats((prev) => {
+        const updated = [...prev];
+        const lastChat = updated[updated.length - 1];
+        if (lastChat?.role === "assistant" && lastChat.streaming) {
+          updated[updated.length - 1] = { ...lastChat, streaming: false };
+        }
+        return updated;
+      });
+    };
+
+    const handleEvent = (frame) => {
+      const data = frame
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trim())
+        .join("\n");
+      if (!data) return;
+
+      const event = JSON.parse(data);
+      if (typeof event.token === "string") {
+        assistantReply += event.token;
+        setPrevChats((prev) => {
+          const updated = [...prev];
+          const lastChat = updated[updated.length - 1];
+          if (lastChat?.role === "assistant" && lastChat.streaming) {
+            updated[updated.length - 1] = {
+              ...lastChat,
+              content: assistantReply,
+            };
+          }
+          return updated;
+        });
+      }
+      if (event.error) {
+        const error = new Error(event.error);
+        error.code = event.code;
+        error.response = {
+          data: { error: event.error, code: event.code },
+        };
+        throw error;
+      }
+      if (event.done) completed = true;
+    };
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        buffer += decoder.decode(value, { stream: !done });
+        const frames = buffer.split(/\r?\n\r?\n/);
+        buffer = frames.pop() || "";
+        frames.forEach(handleEvent);
+        if (done) break;
+      }
+      if (buffer.trim()) handleEvent(buffer);
+      if (!completed) {
+        throw new Error("The response stream ended unexpectedly.");
+      }
+    } catch (error) {
+      finishMessage();
+      throw error;
+    }
+
+    finishMessage();
+    return { data: { reply: assistantReply, streamed: true } };
+  };
+
   const getReply = async () => {
     const currentToken = localStorage.getItem("token");
     if (!currentToken) {
@@ -74,17 +170,17 @@ function ChatWindow() {
     setPrompt("");
 
     try {
-      const response = await axios.post(
+      const response = await streamChatReply(
         `${import.meta.env.VITE_BASE_URL}/api/chat`,
         { message: userPrompt, threadId: currThreadId },
         { headers: { Authorization: `Bearer ${currentToken}` } },
       );
-      if (response.data?.reply) {
+      if (response.data?.reply && !response.data.streamed) {
         setPrevChats((prev) => [
           ...prev,
           { role: "assistant", content: response.data.reply },
         ]);
-      } else {
+      } else if (!response.data?.streamed) {
         toast.error("Failed to get reply");
       }
     } catch (err) {
@@ -94,9 +190,17 @@ function ChatWindow() {
         setToken(null);
         toast.info("Session expired. Please login again.");
         setShowLogin(true);
+      } else if (
+        ["RATE_LIMIT", "EMPTY_RESPONSE"].includes(
+          err.code || err.response?.data?.code,
+        )
+      ) {
+        toast.warning("Too many requests. Please wait a moment and try again.");
       } else {
         toast.error(
-          err.response?.data?.error || "Network error. Please try again.",
+          err.response?.data?.error ||
+            err.message ||
+            "Network error. Please try again.",
         );
       }
     } finally {
@@ -133,10 +237,10 @@ function ChatWindow() {
   }, [isOpen]);
 
   return (
-    <div className="chatwindow-root flex flex-col justify-between items-center h-screen flex-1 w-full bg-[#212121] text-white relative">
+    <div className="chatwindow-root flex flex-col items-center h-screen min-h-0 flex-1 w-full bg-[#212121] text-white relative">
       <div className="w-full flex justify-between items-center px-4 py-3 border-b border-white/5 bg-[#212121] relative z-40">
         <div className="text-sm font-medium text-white/40 font-sans tracking-wide ml-12 sm:ml-0">
-          Model v1.0
+          Model v2.0
         </div>
         <div className="relative">
           <div
@@ -181,9 +285,7 @@ function ChatWindow() {
 
       <Chat />
 
-      <ScaleLoader color="#fff" loading={loading} />
-
-      <div className="w-full flex flex-col justify-center items-center pb-2 px-3 md:px-6">
+      <div className="w-full flex flex-col justify-center items-center pt-3 pb-2 px-3 md:px-6 shrink-0">
         <div className="w-full max-w-[95%] md:max-w-2xl lg:max-w-175 relative flex justify-between items-center">
           <input
             placeholder="Ask anything"
