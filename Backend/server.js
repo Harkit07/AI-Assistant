@@ -1,7 +1,6 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
-import https from "https";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import chatRoutes from "./routes/chat.js";

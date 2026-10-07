@@ -20,13 +20,13 @@ const getOpenAIAPIResponse = async (messages, onToken) => {
     body: JSON.stringify({
       model: "openai/gpt-oss-20b",
       messages: requestMessages,
-      temperature: 1,
-      top_p: 1,
+      temperature: 0.6,
+      top_p: 0.7,
       frequency_penalty: 0,
       presence_penalty: 0,
-      max_tokens: 1500,
-      stream: true,
+      max_tokens: 800,
       reasoning_effort: "low",
+      stream: true,
     }),
   };
 

@@ -78,7 +78,7 @@ router.post("/chat", authUser, async (req, res) => {
     }
 
     const history = thread.messages
-      .slice(-20)
+      .slice(-10)
       .map((m) => ({ role: m.role, content: m.content }));
     res.set({
       "Content-Type": "text/event-stream",
