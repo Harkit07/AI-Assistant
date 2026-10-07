@@ -31,8 +31,12 @@ function Chat() {
                 {chat.content}
               </p>
             ) : (
-              <div className={`text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm ${chat.streaming ? "typing-message" : ""}`}>
-                {chat.streaming && !chat.content ? (
+              <div
+                className={`text-xs md:text-sm [&_pre]:overflow-x-auto [&_pre]:text-xs [&_code]:text-xs md:[&_code]:text-sm ${
+                  chat.streaming ? "typing-message" : ""
+                }`}
+              >
+                {chat.streaming ? (
                   <span className="typing-dots" aria-label="Assistant is typing">
                     <span />
                     <span />
