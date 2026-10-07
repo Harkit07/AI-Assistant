@@ -36,11 +36,14 @@ function Chat() {
                   chat.streaming ? "typing-message" : ""
                 }`}
               >
-                {chat.streaming ? (
-                  <span className="typing-dots" aria-label="Assistant is typing">
-                    <span />
-                    <span />
-                    <span />
+                {chat.streaming && !chat.content ? (
+                  <span className="typing-indicator" role="status" aria-label="Assistant is thinking">
+                    <span>Thinking</span>
+                    <span className="typing-bars" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
                   </span>
                 ) : (
                   <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
